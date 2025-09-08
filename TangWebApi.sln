@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TangWebApi", "TangWebApi\TangWebApi.csproj", "{3E4C000B-F1EF-4ABA-B026-3AA0D9ACF836}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "web", "Web\web.esproj", "{7D128133-D57F-C939-CFF4-334A9B8DF362}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,12 @@ Global
 		{3E4C000B-F1EF-4ABA-B026-3AA0D9ACF836}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E4C000B-F1EF-4ABA-B026-3AA0D9ACF836}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E4C000B-F1EF-4ABA-B026-3AA0D9ACF836}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D128133-D57F-C939-CFF4-334A9B8DF362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D128133-D57F-C939-CFF4-334A9B8DF362}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D128133-D57F-C939-CFF4-334A9B8DF362}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7D128133-D57F-C939-CFF4-334A9B8DF362}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D128133-D57F-C939-CFF4-334A9B8DF362}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D128133-D57F-C939-CFF4-334A9B8DF362}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
