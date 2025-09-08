@@ -56,7 +56,7 @@ TangWebApi/
 
 ### 1. 克隆项目
 ```bash
-git clone <repository-url>
+git clone <https://github.com/TangZhiZzz/TangWebApi.git>
 cd TangWebApi
 ```
 
