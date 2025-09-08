@@ -226,7 +226,7 @@ ENTRYPOINT ["dotnet", "TangWebApi.dll"]
 
 如有问题或建议，请通过以下方式联系：
 - 创建 Issue
-- 发送邮件到 [your-email@example.com]
+- 发送邮件到 [tjfzeishuai@163.com]
 
 ## 🙏 致谢
 
