@@ -405,6 +405,12 @@ namespace TangWebApi.Extensions
             // 注册文件服务
             services.AddScoped<IFileService, FileService>();
 
+            // 注册分片上传服务
+            services.AddScoped<IChunkUploadService, ChunkUploadService>();
+
+            // 注册分片清理后台服务
+            services.AddHostedService<ChunkCleanupService>();
+
             return services;
         }
 
