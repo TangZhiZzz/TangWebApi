@@ -21,6 +21,9 @@ builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddSystemInfoService();
 
+// 添加消息队列消费者后台服务
+builder.Services.AddHostedService<TangWebApi.Services.MessageConsumerService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

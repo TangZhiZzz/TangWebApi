@@ -51,7 +51,7 @@ namespace TangWebApi.Services
                 _connection = factory.CreateConnection();
                 _channel = _connection.CreateModel();
 
-                _logger.LogInformation("RabbitMQ连接已建立");
+                _logger.LogDebug("RabbitMQ连接已建立");
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace TangWebApi.Services
 
                     _channel.BasicPublish(exchange: "", routingKey: queueName, basicProperties: properties, body: body);
 
-                    _logger.LogInformation("消息已发送到队列 {QueueName}: {Message}", queueName, message);
+                    // 移除冗余的消息发送日志
                 }
                 catch (Exception ex)
                 {
@@ -164,7 +164,7 @@ namespace TangWebApi.Services
                             var body = ea.Body.ToArray();
                             var message = Encoding.UTF8.GetString(body);
 
-                            _logger.LogInformation("从队列 {QueueName} 接收到消息: {Message}", queueName, message);
+                            // 移除冗余的消息接收日志
 
                             await handler(message);
 
@@ -180,7 +180,7 @@ namespace TangWebApi.Services
                     };
 
                     _channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
-                    _logger.LogInformation("开始监听队列 {QueueName}", queueName);
+                    _logger.LogDebug("开始监听队列 {QueueName}", queueName);
                 }
                 catch (Exception ex)
                 {
@@ -314,7 +314,7 @@ namespace TangWebApi.Services
                     
                     if (_connection != null && _connection.IsOpen && _channel != null && _channel.IsOpen)
                     {
-                        _logger.LogInformation("RabbitMQ连接测试成功");
+                        _logger.LogDebug("RabbitMQ连接测试成功");
                         return true;
                     }
                     else
@@ -344,7 +344,7 @@ namespace TangWebApi.Services
                     _channel?.Dispose();
                     _connection?.Close();
                     _connection?.Dispose();
-                    _logger.LogInformation("RabbitMQ连接已关闭");
+                    _logger.LogDebug("RabbitMQ连接已关闭");
                 }
                 catch (Exception ex)
                 {

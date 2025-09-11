@@ -41,7 +41,7 @@ namespace TangWebApi.Controllers
 
                 await _messageQueueService.SendMessageAsync(request.QueueName, message);
 
-                _logger.LogInformation("消息已发送到队列 {QueueName}", request.QueueName);
+                // 移除冗余的发送成功日志
 
                 return new SendMessageResponse
                 {
@@ -132,7 +132,7 @@ namespace TangWebApi.Controllers
             {
                 await _messageQueueService.DeleteQueueAsync(queueName);
 
-                _logger.LogInformation("队列 {QueueName} 删除成功", queueName);
+                // 移除冗余的删除成功日志
 
                 return new DeleteQueueResponse
                 {
@@ -214,27 +214,99 @@ namespace TangWebApi.Controllers
         [HttpPost("test-connection")]
         public async Task<TestConnectionResponse> TestConnection()
         {
+            var testResult = new TestResult();
+            var errors = new List<string>();
+
             try
             {
-                var result = await _messageQueueService.TestConnectionAsync();
+                // 测试连接
+                var isConnected = await _messageQueueService.TestConnectionAsync();
+                testResult.ConnectionTest = isConnected;
+                if (!isConnected)
+                {
+                    errors.Add("连接测试失败");
+                }
+
+                // 创建测试队列
+                var testQueueName = $"test-queue-{DateTime.Now:yyyyMMddHHmmss}";
+                await _messageQueueService.CreateQueueAsync(testQueueName);
+                testResult.QueueCreated = true;
+
+                // 发送测试消息
+                var testMessage = $"Test message at {DateTime.Now}";
+                await _messageQueueService.SendMessageAsync(testQueueName, testMessage);
+                testResult.MessageSent = true;
+
+                // 检查消息数量
+                var messageCount = await _messageQueueService.GetMessageCountAsync(testQueueName);
+                testResult.MessageCount = messageCount;
+
+                // 清理测试队列
+                await _messageQueueService.DeleteQueueAsync(testQueueName);
+                testResult.QueueDeleted = true;
+
                 return new TestConnectionResponse
                 {
                     Success = true,
-                    Message = "连接测试完成",
-                    TestResult = new TestResult
-                    {
-                        ConnectionTest = result,
-                        QueueCreated = false,
-                        MessageSent = false,
-                        MessageCount = 0,
-                        QueueDeleted = false
-                    },
+                    Message = "消息队列连接测试成功",
+                    TestResult = testResult,
                     Timestamp = DateTime.Now
                 };
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"连接测试失败: {ex.Message}", ex);
+                _logger.LogError(ex, "测试消息队列连接失败");
+                return new TestConnectionResponse
+                {
+                    Success = false,
+                    Message = "消息队列连接测试失败",
+                    Error = ex.Message,
+                    TestResult = testResult,
+                    Timestamp = DateTime.Now
+                };
+            }
+        }
+
+        /// <summary>
+        /// 测试消息发送和接收功能
+        /// </summary>
+        /// <param name="message">测试消息内容</param>
+        /// <returns></returns>
+        [HttpPost("test-send-receive")]
+        public async Task<IActionResult> TestSendReceive([FromQuery] string message = "Hello from API test!")
+        {
+            try
+            {
+                var queueName = "test-queue";
+                
+                // 确保队列存在
+                await _messageQueueService.CreateQueueAsync(queueName);
+                
+                // 发送测试消息
+                await _messageQueueService.SendMessageAsync(queueName, message);
+                
+                // 移除冗余的测试消息发送日志
+                
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "测试消息已发送，请查看控制台日志以确认消费者是否接收到消息",
+                    QueueName = queueName,
+                    SentMessage = message,
+                    Timestamp = DateTime.Now,
+                    Note = "如果消费者服务正在运行，您应该在控制台看到 '收到消息: ' 的日志输出"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "测试消息发送失败");
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "测试消息发送失败",
+                    Error = ex.Message,
+                    Timestamp = DateTime.Now
+                });
             }
         }
     }
@@ -304,7 +376,7 @@ namespace TangWebApi.Controllers
         public bool ConnectionTest { get; set; }
         public bool QueueCreated { get; set; }
         public bool MessageSent { get; set; }
-        public int MessageCount { get; set; }
+        public uint MessageCount { get; set; }
         public bool QueueDeleted { get; set; }
     }
 }
