@@ -72,11 +72,15 @@ Console.WriteLine(@"
    ██║   ██║  ██║██║ ╚████║╚██████╔╝███████╗██║  ██║██║
    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝
 ");
+// 获取实际运行的地址
+var addresses = app.Urls.Any() ? app.Urls : new[] { "http://localhost:5238" };
+var primaryAddress = addresses.First();
+
 Console.WriteLine("🚀 TangWebApi 启动成功！");
 Console.WriteLine($"📅 启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 Console.WriteLine($"🌐 环境: {app.Environment.EnvironmentName}");
-Console.WriteLine($"📍 访问地址: https://localhost:5001");
-Console.WriteLine($"📖 API文档: https://localhost:5001/swagger");
-Console.WriteLine($"📖 API文档: https://localhost:5001/kapi");
+Console.WriteLine($"📍 访问地址: {primaryAddress}");
+Console.WriteLine($"📖 API文档: {primaryAddress}/swagger");
+Console.WriteLine($"📖 API文档: {primaryAddress}/kapi");
 Console.WriteLine("=".PadRight(60, '='));
 app.Run();
