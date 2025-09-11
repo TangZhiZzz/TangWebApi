@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using TangWebApi.Extensions;
 using TangWebApi.Models;
 
@@ -21,6 +22,7 @@ builder.Services.AddHealthCheckService(builder.Configuration);
 builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddSystemInfoService();
+builder.Services.AddRateLimitingService(builder.Configuration);
 
 // 配置消息队列设置
 builder.Services.Configure<MessageQueueConfig>(builder.Configuration.GetSection("MessageQueue"));
@@ -35,6 +37,10 @@ app.UseDevelopmentEnvironment(app.Environment);
 
 // 配置请求日志中间件（放在最前面以记录所有请求）
 app.UseRequestLogging();
+
+// 配置限流中间件
+app.UseIpRateLimiting();
+app.UseClientRateLimiting();
 
 // 配置静态文件服务（为Knife4j提供支持）
 app.UseStaticFiles();

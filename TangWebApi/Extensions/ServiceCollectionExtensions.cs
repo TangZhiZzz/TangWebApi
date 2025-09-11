@@ -13,6 +13,7 @@ using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using AspNetCoreRateLimit;
 
 namespace TangWebApi.Extensions
 {
@@ -99,6 +100,10 @@ namespace TangWebApi.Extensions
                 c.CustomOperationIds(apiDesc =>
                 {
                     var controllerAction = apiDesc.ActionDescriptor as ControllerActionDescriptor;
+                    if (controllerAction == null)
+                    {
+                        return apiDesc.ActionDescriptor.DisplayName ?? "Unknown";
+                    }
                     if (ActionNameList.Contains(controllerAction.ActionName))
                     {
                         return controllerAction.ActionName + $" ({controllerAction.ControllerName})";
@@ -435,6 +440,32 @@ namespace TangWebApi.Extensions
         {
             // 注册系统信息服务
             services.AddScoped<ISystemInfoService, SystemInfoService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加限流服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddRateLimitingService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 添加内存缓存（限流需要）
+            services.AddMemoryCache();
+
+            // 配置IP限流
+            services.Configure<IpRateLimitOptions>(configuration.GetSection("IpRateLimiting"));
+
+            // 配置客户端限流
+            services.Configure<ClientRateLimitOptions>(configuration.GetSection("ClientRateLimiting"));
+
+            // 添加限流策略存储
+            services.AddInMemoryRateLimiting();
+
+            // 注册限流服务
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
             return services;
         }

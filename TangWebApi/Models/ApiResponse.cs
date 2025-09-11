@@ -74,7 +74,7 @@ namespace TangWebApi.Models
         /// </summary>
         /// <param name="message">消息</param>
         /// <returns>成功响应</returns>
-        public static new ApiResponse CreateSuccess(string message = "操作成功")
+        public static ApiResponse CreateSuccess(string message = "操作成功")
         {
             return new ApiResponse
             {

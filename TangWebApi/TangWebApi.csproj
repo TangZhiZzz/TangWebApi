@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <!-- SqlSugar ORM -->
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="IGeekFan.AspNetCore.Knife4jUI" Version="0.0.16" />
     <PackageReference Include="SqlSugarCore" Version="5.1.4.202" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
