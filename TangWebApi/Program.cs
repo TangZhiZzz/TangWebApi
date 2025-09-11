@@ -23,6 +23,7 @@ builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddSystemInfoService();
 builder.Services.AddRateLimitingService(builder.Configuration);
+builder.Services.AddSignalRService(builder.Configuration);
 
 // 配置消息队列设置
 builder.Services.Configure<MessageQueueConfig>(builder.Configuration.GetSection("MessageQueue"));
@@ -58,6 +59,9 @@ app.UseKnife4jService();
 
 // 配置CORS
 app.UseCorsService();
+
+// 配置SignalR
+app.UseSignalRService();
 
 app.UseHttpsRedirection();
 

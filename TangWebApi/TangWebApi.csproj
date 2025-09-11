@@ -12,11 +12,13 @@
     <!-- SqlSugar ORM -->
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="IGeekFan.AspNetCore.Knife4jUI" Version="0.0.16" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="SqlSugarCore" Version="5.1.4.202" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     
     <!-- Swagger API Documentation -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    
     
     <!-- JWT Authentication -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
