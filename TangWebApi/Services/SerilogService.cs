@@ -79,34 +79,23 @@ namespace TangWebApi.Services
         public void LogStructured(Services.LogLevel level, string message, Dictionary<string, object>? properties = null, Exception? exception = null)
         {
             var serilogLevel = ConvertLogLevel(level);
+            var enrichedLogger = _logger;
             
             if (properties != null && properties.Count > 0)
             {
-                var enrichedLogger = _logger;
                 foreach (var prop in properties)
                 {
                     enrichedLogger = enrichedLogger.ForContext(prop.Key, prop.Value);
                 }
-                
-                if (exception != null)
-                {
-                    enrichedLogger.Write(serilogLevel, exception, message);
-                }
-                else
-                {
-                    enrichedLogger.Write(serilogLevel, message);
-                }
+            }
+            
+            if (exception != null)
+            {
+                enrichedLogger.Write(serilogLevel, exception, message);
             }
             else
             {
-                if (exception != null)
-                {
-                    _logger.Write(serilogLevel, exception, message);
-                }
-                else
-                {
-                    _logger.Write(serilogLevel, message);
-                }
+                enrichedLogger.Write(serilogLevel, message);
             }
         }
 
@@ -115,13 +104,7 @@ namespace TangWebApi.Services
         /// </summary>
         public void LogApiRequest(string method, string path, int statusCode, long duration, string? userAgent = null, string? clientIp = null)
         {
-            _logger.ForContext("RequestMethod", method)
-                   .ForContext("RequestPath", path)
-                   .ForContext("StatusCode", statusCode)
-                   .ForContext("Duration", duration)
-                   .ForContext("UserAgent", userAgent ?? "Unknown")
-                   .ForContext("ClientIP", clientIp ?? "Unknown")
-                   .Information("API Request: {Method} {Path} responded {StatusCode} in {Duration}ms", 
+            _logger.Information("API Request: {Method} {Path} - {StatusCode} ({Duration}ms)", 
                               method, path, statusCode, duration);
         }
 
@@ -133,13 +116,10 @@ namespace TangWebApi.Services
             var level = success ? LogEventLevel.Information : LogEventLevel.Warning;
             var status = success ? "Success" : "Failed";
             
-            _logger.ForContext("Operation", operation)
-                   .ForContext("UserId", userId ?? "Anonymous")
-                   .ForContext("Details", details ?? "No details")
-                   .ForContext("Success", success)
-                   .Write(level, "Business Operation: {Operation} - {Status} (User: {UserId})", 
-                         operation, status, userId ?? "Anonymous");
+            _logger.Write(level, "Business Operation: {Operation} - {Status}", operation, status);
         }
+
+
 
         /// <summary>
         /// 转换日志级别

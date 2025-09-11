@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using TangWebApi.Services;
 using TangWebApi.Models;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Options;
 
 namespace TangWebApi.Controllers
 {
@@ -14,11 +15,16 @@ namespace TangWebApi.Controllers
     {
         private readonly IMessageQueueService _messageQueueService;
         private readonly ILogger<MessageQueueController> _logger;
+        private readonly MessageQueueConfig _messageQueueConfig;
 
-        public MessageQueueController(IMessageQueueService messageQueueService, ILogger<MessageQueueController> logger)
+        public MessageQueueController(
+            IMessageQueueService messageQueueService, 
+            ILogger<MessageQueueController> logger,
+            IOptions<MessageQueueConfig> messageQueueConfig)
         {
             _messageQueueService = messageQueueService;
             _logger = logger;
+            _messageQueueConfig = messageQueueConfig.Value;
         }
 
         /// <summary>
@@ -309,6 +315,107 @@ namespace TangWebApi.Controllers
                 });
             }
         }
+
+        /// <summary>
+        /// 测试多队列功能 - 向所有启用的队列发送测试消息
+        /// </summary>
+        /// <param name="message">测试消息</param>
+        /// <returns></returns>
+        [HttpPost("test-multi-queues")]
+        public async Task<TestMultiQueuesResponse> TestMultiQueues(string message = "Multi-Queue Test Message")
+        {
+            try
+            {
+                var enabledQueues = _messageQueueConfig.Queues.Where(q => q.Enabled).ToList();
+                var results = new List<QueueTestResult>();
+
+                _logger.LogInformation("开始测试多队列功能，向 {Count} 个队列发送消息", enabledQueues.Count);
+
+                foreach (var queueConfig in enabledQueues)
+                {
+                    try
+                    {
+                        var testMessage = $"[{queueConfig.Name}] {message} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                        await _messageQueueService.SendMessageAsync(queueConfig.Name, testMessage);
+
+                        results.Add(new QueueTestResult
+                        {
+                            QueueName = queueConfig.Name,
+                            Description = queueConfig.Description,
+                            Success = true,
+                            Message = "消息发送成功",
+                            SentMessage = testMessage
+                        });
+
+                        _logger.LogInformation("向队列 {QueueName} 发送测试消息成功", queueConfig.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        results.Add(new QueueTestResult
+                        {
+                            QueueName = queueConfig.Name,
+                            Description = queueConfig.Description,
+                            Success = false,
+                            Message = $"发送失败: {ex.Message}",
+                            SentMessage = null
+                        });
+
+                        _logger.LogError(ex, "向队列 {QueueName} 发送测试消息失败", queueConfig.Name);
+                    }
+                }
+
+                var successCount = results.Count(r => r.Success);
+                var totalCount = results.Count;
+
+                return new TestMultiQueuesResponse
+                {
+                    Success = successCount > 0,
+                    Message = $"多队列测试完成，成功 {successCount}/{totalCount} 个队列",
+                    TotalQueues = totalCount,
+                    SuccessfulQueues = successCount,
+                    FailedQueues = totalCount - successCount,
+                    Results = results,
+                    Timestamp = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "多队列测试失败");
+                throw new InvalidOperationException($"多队列测试失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取队列配置信息
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("queue-config")]
+        public QueueConfigResponse GetQueueConfig()
+        {
+            try
+            {
+                return new QueueConfigResponse
+                {
+                    Success = true,
+                    Message = "获取队列配置成功",
+                    TotalQueues = _messageQueueConfig.Queues.Count,
+                    EnabledQueues = _messageQueueConfig.Queues.Count(q => q.Enabled),
+                    DisabledQueues = _messageQueueConfig.Queues.Count(q => !q.Enabled),
+                    Queues = _messageQueueConfig.Queues.Select(q => new QueueConfigInfo
+                    {
+                        Name = q.Name,
+                        Description = q.Description,
+                        Enabled = q.Enabled
+                    }).ToList(),
+                    Timestamp = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取队列配置失败");
+                throw new InvalidOperationException($"获取队列配置失败: {ex.Message}", ex);
+            }
+        }
     }
 
     // 消息队列相关响应模型
@@ -378,5 +485,43 @@ namespace TangWebApi.Controllers
         public bool MessageSent { get; set; }
         public uint MessageCount { get; set; }
         public bool QueueDeleted { get; set; }
+    }
+
+    public class TestMultiQueuesResponse
+    {
+        public bool Success { get; set; }
+        public required string Message { get; set; }
+        public int TotalQueues { get; set; }
+        public int SuccessfulQueues { get; set; }
+        public int FailedQueues { get; set; }
+        public required List<QueueTestResult> Results { get; set; }
+        public DateTime Timestamp { get; set; }
+    }
+
+    public class QueueTestResult
+    {
+        public required string QueueName { get; set; }
+        public string? Description { get; set; }
+        public bool Success { get; set; }
+        public required string Message { get; set; }
+        public string? SentMessage { get; set; }
+    }
+
+    public class QueueConfigResponse
+    {
+        public bool Success { get; set; }
+        public required string Message { get; set; }
+        public int TotalQueues { get; set; }
+        public int EnabledQueues { get; set; }
+        public int DisabledQueues { get; set; }
+        public required List<QueueConfigInfo> Queues { get; set; }
+        public DateTime Timestamp { get; set; }
+    }
+
+    public class QueueConfigInfo
+    {
+        public required string Name { get; set; }
+        public string? Description { get; set; }
+        public bool Enabled { get; set; }
     }
 }

@@ -127,13 +127,16 @@ namespace TangWebApi.Middleware
                 var request = context.Request;
 
                 // 记录API请求日志
+                var userAgent = request.Headers["User-Agent"].FirstOrDefault();
+                var clientIp = GetClientIpAddress(context);
+                
                 _loggingService.LogApiRequest(
                     request.Method,
                     request.Path,
                     response.StatusCode,
                     elapsedMilliseconds,
-                    request.Headers.UserAgent.ToString(),
-                    GetClientIpAddress(context));
+                    userAgent,
+                    clientIp);
 
                 // 详细响应信息（仅在Debug级别）
                 var responseInfo = new StringBuilder();
@@ -167,9 +170,28 @@ namespace TangWebApi.Middleware
                 pathValue.StartsWith("/css/") ||
                 pathValue.StartsWith("/js/") ||
                 pathValue.StartsWith("/images/") ||
+                pathValue.StartsWith("/img/") ||
+                pathValue.StartsWith("/fonts/") ||
+                pathValue.StartsWith("/assets/") ||
+                pathValue.StartsWith("/static/") ||
+                pathValue.StartsWith("/wwwroot/") ||
                 pathValue.StartsWith("/favicon.ico") ||
+                pathValue.StartsWith("/robots.txt") ||
+                pathValue.StartsWith("/sitemap.xml") ||
                 pathValue.StartsWith("/health") ||
-                pathValue.StartsWith("/metrics"));
+                pathValue.StartsWith("/metrics") ||
+                pathValue.EndsWith(".css") ||
+                pathValue.EndsWith(".js") ||
+                pathValue.EndsWith(".png") ||
+                pathValue.EndsWith(".jpg") ||
+                pathValue.EndsWith(".jpeg") ||
+                pathValue.EndsWith(".gif") ||
+                pathValue.EndsWith(".svg") ||
+                pathValue.EndsWith(".ico") ||
+                pathValue.EndsWith(".woff") ||
+                pathValue.EndsWith(".woff2") ||
+                pathValue.EndsWith(".ttf") ||
+                pathValue.EndsWith(".eot"));
         }
 
         /// <summary>

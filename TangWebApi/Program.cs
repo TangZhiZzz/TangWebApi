@@ -1,4 +1,5 @@
 using TangWebApi.Extensions;
+using TangWebApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddHealthCheckService(builder.Configuration);
 builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddSystemInfoService();
+
+// 配置消息队列设置
+builder.Services.Configure<MessageQueueConfig>(builder.Configuration.GetSection("MessageQueue"));
 
 // 添加消息队列消费者后台服务
 builder.Services.AddHostedService<TangWebApi.Services.MessageConsumerService>();
