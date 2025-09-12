@@ -3,7 +3,7 @@ using SqlSugar;
 using System.Security.Cryptography;
 using System.Text;
 using TangWebApi.Models;
-using FileInfo = TangWebApi.Models.FileInfo;
+using FileInfo = TangWebApi.Entity.FileInfo;
 
 namespace TangWebApi.Services
 {

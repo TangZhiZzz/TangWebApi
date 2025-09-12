@@ -469,5 +469,22 @@ namespace TangWebApi.Extensions
 
             return services;
         }
+
+        /// <summary>
+        /// 添加SignalR服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddSignalRService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 添加SignalR服务
+            services.AddSignalR();
+
+            // 注册SignalR相关服务
+            services.AddScoped<ISignalRService, SignalRService>();
+
+            return services;
+        }
     }
 }

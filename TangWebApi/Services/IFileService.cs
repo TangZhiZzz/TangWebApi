@@ -1,5 +1,5 @@
 using TangWebApi.Models;
-using FileInfo = TangWebApi.Models.FileInfo;
+using FileInfo = TangWebApi.Entity.FileInfo;
 
 namespace TangWebApi.Services
 {

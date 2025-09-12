@@ -214,7 +214,7 @@ namespace TangWebApi.Controllers
         /// <param name="id">文件ID</param>
         /// <returns>文件信息</returns>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(TangWebApi.Models.FileInfo), 200)]
+        [ProducesResponseType(typeof(TangWebApi.Entity.FileInfo), 200)]
         [ProducesResponseType(typeof(string), 404)]
         public async Task<IActionResult> GetFileById(int id)
         {
@@ -241,7 +241,7 @@ namespace TangWebApi.Controllers
         /// <param name="request">查询条件</param>
         /// <returns>文件列表</returns>
         [HttpPost("query")]
-        [ProducesResponseType(typeof(List<TangWebApi.Models.FileInfo>), 200)]
+        [ProducesResponseType(typeof(List<TangWebApi.Entity.FileInfo>), 200)]
         public async Task<IActionResult> QueryFiles([FromBody] FileQueryRequest request)
         {
             try

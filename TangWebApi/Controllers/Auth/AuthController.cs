@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SqlSugar;
+using TangWebApi.Entity;
 using TangWebApi.Models;
 using TangWebApi.Services;
 

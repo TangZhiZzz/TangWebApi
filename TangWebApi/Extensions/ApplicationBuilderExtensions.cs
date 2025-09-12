@@ -109,5 +109,16 @@ namespace TangWebApi.Extensions
             app.UseMiddleware<RequestLoggingMiddleware>();
             return app;
         }
+
+        /// <summary>
+        /// 使用SignalR服务
+        /// </summary>
+        /// <param name="app">应用程序构建器</param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseSignalRService(this IApplicationBuilder app)
+        {
+            // SignalR Hub映射需要在Program.cs中使用app.MapHub进行配置
+            return app;
+        }
     }
 }

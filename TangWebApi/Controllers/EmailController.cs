@@ -28,7 +28,7 @@ namespace TangWebApi.Controllers
         /// <param name="request">邮件发送请求</param>
         /// <returns>发送结果</returns>
         [HttpPost("send")]
-        public async Task<EmailResult> SendEmail([FromBody] SendEmailRequest request)
+        public async Task<ActionResult<EmailSendResult>> SendEmail([FromBody] SendEmailRequest request)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace TangWebApi.Controllers
         /// <param name="request">模板邮件发送请求</param>
         /// <returns>发送结果</returns>
         [HttpPost("send-template")]
-        public async Task<EmailResult> SendTemplateEmail([FromBody] SendTemplateEmailRequest request)
+        public async Task<ActionResult<EmailSendResult>> SendTemplateEmail([FromBody] SendTemplateEmailRequest request)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace TangWebApi.Controllers
         /// <param name="template">邮件模板</param>
         /// <returns>创建结果</returns>
         [HttpPost("templates")]
-        public async Task<EmailTemplate> CreateTemplate([FromBody] EmailTemplate template)
+        public async Task<ActionResult<EmailTemplate>> CreateTemplate([FromBody] EmailTemplate template)
         {
             try
             {
@@ -122,7 +122,7 @@ namespace TangWebApi.Controllers
         /// <param name="template">邮件模板</param>
         /// <returns>更新结果</returns>
         [HttpPut("templates/{id}")]
-        public async Task<EmailTemplate> UpdateTemplate(string id, [FromBody] EmailTemplate template)
+        public async Task<ActionResult<EmailTemplate>> UpdateTemplate(string id, [FromBody] EmailTemplate template)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace TangWebApi.Controllers
         /// <param name="id">模板ID</param>
         /// <returns>删除结果</returns>
         [HttpDelete("templates/{id}")]
-        public async Task DeleteTemplate(string id)
+        public async Task<ActionResult> DeleteTemplate(string id)
         {
             try
             {
@@ -168,6 +168,8 @@ namespace TangWebApi.Controllers
                 {
                     throw new KeyNotFoundException("模板不存在");
                 }
+
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -182,7 +184,7 @@ namespace TangWebApi.Controllers
         /// <param name="id">模板ID</param>
         /// <returns>邮件模板</returns>
         [HttpGet("templates/{id}")]
-        public async Task<EmailTemplate> GetTemplate(string id)
+        public async Task<ActionResult<EmailTemplate>> GetTemplate(string id)
         {
             try
             {
@@ -207,7 +209,7 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns>邮件模板列表</returns>
         [HttpGet("templates")]
-        public async Task<List<EmailTemplate>> GetAllTemplates()
+        public async Task<ActionResult<List<EmailTemplate>>> GetAllTemplates()
         {
             try
             {
@@ -226,7 +228,7 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns>连接测试结果</returns>
         [HttpPost("test-connection")]
-        public async Task<EmailConnectionTestResult> TestConnection()
+        public async Task<ActionResult<EmailConnectionTestResult>> TestConnection()
         {
             try
             {
@@ -245,11 +247,5 @@ namespace TangWebApi.Controllers
                 throw new InvalidOperationException($"测试邮件连接失败: {ex.Message}", ex);
             }
         }
-    }
-
-    public class EmailConnectionTestResult
-    {
-        public bool Connected { get; set; }
-        public DateTime TestedAt { get; set; }
     }
 }

@@ -188,4 +188,20 @@ namespace TangWebApi.Models
         /// </summary>
         public required string Password { get; set; }
     }
+
+    /// <summary>
+    /// 邮件连接测试结果模型
+    /// </summary>
+    public class EmailConnectionTestResult
+    {
+        /// <summary>
+        /// 是否连接成功
+        /// </summary>
+        public bool Connected { get; set; }
+
+        /// <summary>
+        /// 测试时间
+        /// </summary>
+        public DateTime TestedAt { get; set; }
+    }
 }

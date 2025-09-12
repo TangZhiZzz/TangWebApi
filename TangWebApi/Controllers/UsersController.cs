@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SqlSugar;
+using TangWebApi.Entity;
 using TangWebApi.Models;
 using TangWebApi.Services;
 
@@ -127,9 +128,6 @@ namespace TangWebApi.Controllers
         /// <response code="404">用户不存在</response>
         /// <response code="400">请求参数错误</response>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(User), 200)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(400)]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
             try
