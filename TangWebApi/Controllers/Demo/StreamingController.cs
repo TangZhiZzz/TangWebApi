@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
+using TangWebApi.Filter;
 
 namespace TangWebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [SkipApiResponseFilter]
     public class StreamingController : ControllerBase
     {
         private readonly ILogger<StreamingController> _logger;

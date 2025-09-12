@@ -16,6 +16,19 @@ namespace TangWebApi.Filter
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
+            // 检查是否有跳过过滤器的标记
+            var skipFilter = context.ActionDescriptor.EndpointMetadata
+                .OfType<SkipApiResponseFilterAttribute>()
+                .Any() ||
+                context.Controller.GetType()
+                .GetCustomAttributes(typeof(SkipApiResponseFilterAttribute), true)
+                .Any();
+
+            if (skipFilter)
+            {
+                return;
+            }
+
             // 如果已经是异常结果，不处理
             if (context.Exception != null)
             {
