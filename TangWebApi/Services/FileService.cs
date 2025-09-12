@@ -13,13 +13,13 @@ namespace TangWebApi.Services
     public class FileService : IFileService
     {
         private readonly ISqlSugarClient _db;
-        private readonly FileSettings _fileSettings;
+        private readonly TangWebApi.Options.FileSettings _fileSettings;
         private readonly ILogger<FileService> _logger;
         private readonly IWebHostEnvironment _environment;
 
         public FileService(
             ISqlSugarClient db,
-            IOptions<FileSettings> fileSettings,
+            IOptions<TangWebApi.Options.FileSettings> fileSettings,
             ILogger<FileService> logger,
             IWebHostEnvironment environment)
         {

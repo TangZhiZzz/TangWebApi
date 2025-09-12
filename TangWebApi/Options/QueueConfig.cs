@@ -1,4 +1,4 @@
-namespace TangWebApi.Models
+namespace TangWebApi.Options
 {
     /// <summary>
     /// 队列配置模型

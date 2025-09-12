@@ -11,11 +11,11 @@ namespace TangWebApi.Services
     /// </summary>
     public class EmailService : IEmailService
     {
-        private readonly EmailSettings _emailSettings;
+        private readonly TangWebApi.Options.EmailSettings _emailSettings;
         private readonly ILogger<EmailService> _logger;
         private readonly List<EmailTemplate> _templates;
 
-        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
+        public EmailService(IOptions<TangWebApi.Options.EmailSettings> emailSettings, ILogger<EmailService> logger)
         {
             _emailSettings = emailSettings.Value;
             _logger = logger;

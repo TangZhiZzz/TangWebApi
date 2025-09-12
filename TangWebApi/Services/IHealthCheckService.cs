@@ -54,12 +54,12 @@ namespace TangWebApi.Services
         /// 获取健康检查配置
         /// </summary>
         /// <returns>健康检查配置</returns>
-        HealthCheckConfiguration GetConfiguration();
+        TangWebApi.Options.HealthCheckConfiguration GetConfiguration();
 
         /// <summary>
         /// 更新健康检查配置
         /// </summary>
         /// <param name="configuration">新的配置</param>
-        void UpdateConfiguration(HealthCheckConfiguration configuration);
+        void UpdateConfiguration(TangWebApi.Options.HealthCheckConfiguration configuration);
     }
 }

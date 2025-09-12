@@ -26,7 +26,7 @@ builder.Services.AddRateLimitingService(builder.Configuration);
 builder.Services.AddSignalRService(builder.Configuration);
 
 // 配置消息队列设置
-builder.Services.Configure<MessageQueueConfig>(builder.Configuration.GetSection("MessageQueue"));
+builder.Services.Configure<TangWebApi.Options.MessageQueueConfig>(builder.Configuration.GetSection("MessageQueue"));
 
 // 添加消息队列消费者后台服务
 builder.Services.AddHostedService<TangWebApi.Services.MessageConsumerService>();

@@ -160,7 +160,7 @@ namespace TangWebApi.Controllers
         /// <param name="configuration">新的配置</param>
         /// <returns>更新结果</returns>
         [HttpPut("configuration")]
-        public IActionResult UpdateConfiguration([FromBody] HealthCheckConfiguration configuration)
+        public IActionResult UpdateConfiguration([FromBody] TangWebApi.Options.HealthCheckConfiguration configuration)
         {
             try
             {

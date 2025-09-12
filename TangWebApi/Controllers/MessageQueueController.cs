@@ -15,12 +15,12 @@ namespace TangWebApi.Controllers
     {
         private readonly IMessageQueueService _messageQueueService;
         private readonly ILogger<MessageQueueController> _logger;
-        private readonly MessageQueueConfig _messageQueueConfig;
+        private readonly TangWebApi.Options.MessageQueueConfig _messageQueueConfig;
 
         public MessageQueueController(
             IMessageQueueService messageQueueService, 
             ILogger<MessageQueueController> logger,
-            IOptions<MessageQueueConfig> messageQueueConfig)
+            IOptions<TangWebApi.Options.MessageQueueConfig> messageQueueConfig)
         {
             _messageQueueService = messageQueueService;
             _logger = logger;

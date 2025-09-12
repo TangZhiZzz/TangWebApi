@@ -11,13 +11,13 @@ namespace TangWebApi.Services
     {
         private readonly IMessageQueueService _messageQueueService;
         private readonly ILogger<MessageConsumerService> _logger;
-        private readonly MessageQueueConfig _messageQueueConfig;
+        private readonly TangWebApi.Options.MessageQueueConfig _messageQueueConfig;
         private readonly List<Task> _consumerTasks = new List<Task>();
 
         public MessageConsumerService(
             IMessageQueueService messageQueueService,
             ILogger<MessageConsumerService> logger,
-            IOptions<MessageQueueConfig> messageQueueConfig)
+            IOptions<TangWebApi.Options.MessageQueueConfig> messageQueueConfig)
         {
             _messageQueueService = messageQueueService;
             _logger = logger;
@@ -54,7 +54,7 @@ namespace TangWebApi.Services
         /// <param name="queueConfig">队列配置</param>
         /// <param name="stoppingToken">取消令牌</param>
         /// <returns></returns>
-        private async Task StartQueueConsumerAsync(QueueConfig queueConfig, CancellationToken stoppingToken)
+        private async Task StartQueueConsumerAsync(TangWebApi.Options.QueueConfig queueConfig, CancellationToken stoppingToken)
         {
             _logger.LogDebug("开始监听队列: {QueueName} - {Description}", queueConfig.Name, queueConfig.Description);
 

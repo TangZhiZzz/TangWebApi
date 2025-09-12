@@ -19,7 +19,7 @@ namespace TangWebApi.Services
         private readonly IMessageQueueService _messageQueueService;
         private readonly ILogger<HealthCheckService> _logger;
         private readonly DateTime _startTime;
-        private HealthCheckConfiguration _configuration;
+        private TangWebApi.Options.HealthCheckConfiguration _configuration;
 
         public HealthCheckService(
             ISqlSugarClient sqlSugarClient,
@@ -32,7 +32,7 @@ namespace TangWebApi.Services
             _messageQueueService = messageQueueService;
             _logger = logger;
             _startTime = DateTime.UtcNow;
-            _configuration = new HealthCheckConfiguration();
+            _configuration = new TangWebApi.Options.HealthCheckConfiguration();
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace TangWebApi.Services
         /// <summary>
         /// 获取健康检查配置
         /// </summary>
-        public HealthCheckConfiguration GetConfiguration()
+        public TangWebApi.Options.HealthCheckConfiguration GetConfiguration()
         {
             return _configuration;
         }
@@ -330,7 +330,7 @@ namespace TangWebApi.Services
         /// <summary>
         /// 更新健康检查配置
         /// </summary>
-        public void UpdateConfiguration(HealthCheckConfiguration configuration)
+        public void UpdateConfiguration(TangWebApi.Options.HealthCheckConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger.LogInformation("健康检查配置已更新");

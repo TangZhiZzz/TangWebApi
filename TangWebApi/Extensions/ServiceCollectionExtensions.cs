@@ -388,7 +388,7 @@ namespace TangWebApi.Extensions
         public static IServiceCollection AddEmailService(this IServiceCollection services, IConfiguration configuration)
         {
             // 配置邮件设置
-            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+            services.Configure<TangWebApi.Options.EmailSettings>(configuration.GetSection("EmailSettings"));
 
             // 注册邮件服务
             services.AddScoped<IEmailService, EmailService>();
@@ -405,7 +405,7 @@ namespace TangWebApi.Extensions
         public static IServiceCollection AddFileService(this IServiceCollection services, IConfiguration configuration)
         {
             // 配置文件设置
-            services.Configure<FileSettings>(configuration.GetSection("FileSettings"));
+            services.Configure<TangWebApi.Options.FileSettings>(configuration.GetSection("FileSettings"));
 
             // 注册文件服务
             services.AddScoped<IFileService, FileService>();
