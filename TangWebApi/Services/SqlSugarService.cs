@@ -1,4 +1,5 @@
 using SqlSugar;
+using TangWebApi.Entity;
 using TangWebApi.Models;
 
 namespace TangWebApi.Services
@@ -27,7 +28,7 @@ namespace TangWebApi.Services
 
                 // 创建表（如果不存在）
                 _db.CodeFirst.InitTables<User>();
-                _db.CodeFirst.InitTables<TangWebApi.Models.FileInfo>();
+                _db.CodeFirst.InitTables<TangWebApi.Entity.FileInfo>();
 
                 // 插入测试数据
                 await SeedDataAsync();
