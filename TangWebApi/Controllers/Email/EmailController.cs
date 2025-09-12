@@ -14,12 +14,10 @@ namespace TangWebApi.Controllers
     public class EmailController : ControllerBase
     {
         private readonly IEmailService _emailService;
-        private readonly ILogger<EmailController> _logger;
 
         public EmailController(IEmailService emailService, ILogger<EmailController> logger)
         {
             _emailService = emailService;
-            _logger = logger;
         }
 
         /// <summary>

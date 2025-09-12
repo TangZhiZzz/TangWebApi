@@ -14,12 +14,10 @@ namespace TangWebApi.Controllers
     public class FileController : ControllerBase
     {
         private readonly IFileService _fileService;
-        private readonly ILogger<FileController> _logger;
 
         public FileController(IFileService fileService, ILogger<FileController> logger)
         {
             _fileService = fileService;
-            _logger = logger;
         }
 
         /// <summary>

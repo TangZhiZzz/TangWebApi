@@ -37,6 +37,15 @@ namespace TangWebApi.Middleware
                 // 记录请求信息
                 await LogRequestAsync(context.Request);
 
+                // 检查是否为流式输出端点，如果是则不缓存响应
+                if (IsStreamingEndpoint(context.Request.Path))
+                {
+                    // 对于流式输出，直接执行下一个中间件，不缓存响应
+                    await _next(context);
+                    stopwatch.Stop();
+                    return;
+                }
+
                 // 创建内存流来捕获响应
                 using var responseBody = new MemoryStream();
                 context.Response.Body = responseBody;
@@ -211,6 +220,64 @@ namespace TangWebApi.Middleware
                 contentType.Contains("application/json") ||
                 contentType.Contains("application/xml") ||
                 contentType.Contains("text/"));
+        }
+
+        /// <summary>
+        /// 判断是否为流式输出端点
+        /// </summary>
+        private static bool IsStreamingEndpoint(PathString path)
+        {
+            var pathValue = path.Value?.ToLowerInvariant();
+            return pathValue != null && (
+                pathValue.StartsWith("/api/streaming/") ||
+                pathValue.Contains("/stream") ||
+                pathValue.Contains("/sse") ||
+                pathValue.Contains("/events"));
+        }
+
+        /// <summary>
+        /// 记录流式输出响应信息（不包含响应体）
+        /// </summary>
+        private void LogStreamingResponse(HttpContext context, long elapsedMilliseconds)
+        {
+            try
+            {
+                var response = context.Response;
+                var request = context.Request;
+
+                // 记录API请求日志
+                var userAgent = request.Headers["User-Agent"].FirstOrDefault();
+                var clientIp = GetClientIpAddress(context);
+                
+                _loggingService.LogApiRequest(
+                    request.Method,
+                    request.Path,
+                    response.StatusCode,
+                    elapsedMilliseconds,
+                    userAgent,
+                    clientIp);
+
+                // 详细响应信息（仅在Debug级别）
+                var responseInfo = new StringBuilder();
+                responseInfo.AppendLine($"Streaming Response: {response.StatusCode}");
+                responseInfo.AppendLine($"Headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}={h.Value}"))}");
+                responseInfo.AppendLine($"ContentType: {response.ContentType}");
+                responseInfo.AppendLine($"Duration: {elapsedMilliseconds}ms");
+                responseInfo.AppendLine("Note: Response body not logged for streaming endpoints");
+
+                _loggingService.LogDebug(responseInfo.ToString());
+
+                // 记录慢请求
+                if (elapsedMilliseconds > 5000) // 超过5秒的请求
+                {
+                    _loggingService.LogWarning("Slow streaming request detected: {Method} {Path} took {Duration}ms", 
+                        request.Method, request.Path, elapsedMilliseconds);
+                }
+            }
+            catch (Exception ex)
+            {
+                _loggingService.LogWarning("Failed to log streaming response details: {Error}", ex.Message);
+            }
         }
 
         /// <summary>

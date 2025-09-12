@@ -4,6 +4,7 @@ using TangWebApi.Models;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 using TangWebApi.Options;
+using Azure.Core;
 
 namespace TangWebApi.Controllers
 {
@@ -36,23 +37,19 @@ namespace TangWebApi.Controllers
         [HttpPost("send")]
         public async Task SendMessage([FromBody] SendMessageRequest request)
         {
-            try
+            var message = new QueueMessage
             {
-                var message = new QueueMessage
-                {
-                    MessageType = request.MessageType,
-                    Data = request.Message,
-                    Priority = request.Priority,
-                    ExpirationMs = request.ExpirationMs
-                };
+                MessageType = request.MessageType,
+                Data = request.Message,
+                Priority = request.Priority,
+                ExpirationMs = request.ExpirationMs
+            };
 
-                await _messageQueueService.SendMessageAsync(request.QueueName, message);
+            await _messageQueueService.SendMessageAsync(request.QueueName, message);
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发送消息到队列 {QueueName} 失败", request.QueueName);
-            }
+            _logger.LogInformation("消息已发送到队列 {QueueName}: {Message}", request.QueueName, message);
+
+
         }
 
         /// <summary>
@@ -64,18 +61,11 @@ namespace TangWebApi.Controllers
         [HttpPost("send-text")]
         public async Task SendTextMessage([Required] string queueName, [Required] string message)
         {
-            try
-            {
-                await _messageQueueService.SendMessageAsync(queueName, message);
+            await _messageQueueService.SendMessageAsync(queueName, message);
 
-                _logger.LogInformation("文本消息已发送到队列 {QueueName}: {Message}", queueName, message);
+            _logger.LogInformation("文本消息已发送到队列 {QueueName}: {Message}", queueName, message);
 
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发送文本消息到队列 {QueueName} 失败", queueName);
-            }
         }
 
         /// <summary>
@@ -86,18 +76,12 @@ namespace TangWebApi.Controllers
         [HttpPost("create-queue")]
         public async Task CreateQueue([FromBody] CreateQueueRequest request)
         {
-            try
-            {
-                await _messageQueueService.CreateQueueAsync(request.QueueName, request.Durable);
+            await _messageQueueService.CreateQueueAsync(request.QueueName, request.Durable);
 
-                _logger.LogInformation("队列 {QueueName} 创建成功", request.QueueName);
+            _logger.LogInformation("队列 {QueueName} 创建成功", request.QueueName);
 
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建队列 {QueueName} 失败", request.QueueName);
-            }
+
         }
 
         /// <summary>
@@ -108,16 +92,10 @@ namespace TangWebApi.Controllers
         [HttpDelete("delete-queue/{queueName}")]
         public async Task DeleteQueue(string queueName)
         {
-            try
-            {
-                await _messageQueueService.DeleteQueueAsync(queueName);
+            await _messageQueueService.DeleteQueueAsync(queueName);
+            _logger.LogInformation("删除队列 {queueName} 成功", queueName);
 
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除队列 {QueueName} 失败", queueName);
-            }
         }
 
         /// <summary>

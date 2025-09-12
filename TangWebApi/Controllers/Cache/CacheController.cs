@@ -11,12 +11,10 @@ namespace TangWebApi.Controllers
     public class CacheController : ControllerBase
     {
         private readonly ICacheService _cacheService;
-        private readonly ILogger<CacheController> _logger;
 
         public CacheController(ICacheService cacheService, ILogger<CacheController> logger)
         {
             _cacheService = cacheService;
-            _logger = logger;
         }
 
         /// <summary>
@@ -36,7 +34,6 @@ namespace TangWebApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "设置缓存失败");
                 throw new InvalidOperationException($"设置缓存失败: {ex.Message}", ex);
             }
         }
@@ -64,7 +61,6 @@ namespace TangWebApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取缓存失败");
                 throw new InvalidOperationException($"获取缓存失败: {ex.Message}", ex);
             }
         }
@@ -83,7 +79,6 @@ namespace TangWebApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除缓存失败");
                 throw new InvalidOperationException($"删除缓存失败: {ex.Message}", ex);
             }
         }
@@ -103,7 +98,6 @@ namespace TangWebApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "检查缓存失败");
                 throw new InvalidOperationException($"检查缓存失败: {ex.Message}", ex);
             }
         }
@@ -121,7 +115,6 @@ namespace TangWebApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "清空缓存失败");
                 throw new InvalidOperationException($"清空缓存失败: {ex.Message}", ex);
             }
         }
