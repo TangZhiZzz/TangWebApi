@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式输出测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ASP.NET Core 流式输出测试</h1>
+    
+    <div class="container">
+        <h2>1. 简单测试流</h2>
+        <button onclick="testSimple()">测试简单流</button>
+        <button onclick="clearOutput('simple')">清空</button>
+        <div id="simple-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. 文本流</h2>
+        <button onclick="testTextStream()">测试文本流</button>
+        <button onclick="clearOutput('text')">清空</button>
+        <div id="text-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. JSON流</h2>
+        <button onclick="testJsonStream()">测试JSON流</button>
+        <button onclick="clearOutput('json')">清空</button>
+        <div id="json-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. 服务器发送事件(SSE)</h2>
+        <button onclick="testSSE()">测试SSE</button>
+        <button onclick="clearOutput('sse')">清空</button>
+        <div id="sse-output" class="output"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. 进度流</h2>
+        <button onclick="testProgress()">测试进度流</button>
+        <button onclick="clearOutput('progress')">清空</button>
+        <div id="progress-output" class="output"></div>
+    </div>
+
+    <script>
+        function addOutput(type, message) {
+            const output = document.getElementById(type + '-output');
+            output.textContent += message + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput(type) {
+            document.getElementById(type + '-output').textContent = '';
+        }
+
+        async function testSimple() {
+            clearOutput('simple');
+            addOutput('simple', '开始测试简单流...');
+            
+            try {
+                const response = await fetch('/streaming/test');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value, { stream: true });
+                    addOutput('simple', text.trim());
+                }
+                
+                addOutput('simple', '✅ 简单流测试完成');
+            } catch (error) {
+                addOutput('simple', '❌ 错误: ' + error.message);
+            }
+        }
+
+        async function testTextStream() {
+            clearOutput('text');
+            addOutput('text', '开始测试文本流...');
+            
+            try {
+                const response = await fetch('/streaming/text');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value, { stream: true });
+                    addOutput('text', text.trim());
+                }
+                
+                addOutput('text', '✅ 文本流测试完成');
+            } catch (error) {
+                addOutput('text', '❌ 错误: ' + error.message);
+            }
+        }
+
+        async function testJsonStream() {
+            clearOutput('json');
+            addOutput('json', '开始测试JSON流...');
+            
+            try {
+                const response = await fetch('/streaming/json');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value, { stream: true });
+                    const lines = text.trim().split('\n');
+                    
+                    lines.forEach(line => {
+                        if (line.trim()) {
+                            try {
+                                const json = JSON.parse(line);
+                                addOutput('json', `消息 ${json.id}: ${json.message} (${json.timestamp})`);
+                            } catch (e) {
+                                addOutput('json', line);
+                            }
+                        }
+                    });
+                }
+                
+                addOutput('json', '✅ JSON流测试完成');
+            } catch (error) {
+                addOutput('json', '❌ 错误: ' + error.message);
+            }
+        }
+
+        function testSSE() {
+            clearOutput('sse');
+            addOutput('sse', '开始测试服务器发送事件...');
+            
+            const eventSource = new EventSource('/streaming/sse');
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    addOutput('sse', `消息 ${data.id}: ${data.message} (${data.timestamp})`);
+                } catch (e) {
+                    addOutput('sse', event.data);
+                }
+            };
+            
+            eventSource.onerror = function(error) {
+                addOutput('sse', '❌ SSE连接错误');
+                eventSource.close();
+            };
+            
+            eventSource.addEventListener('complete', function(event) {
+                addOutput('sse', '✅ SSE测试完成');
+                eventSource.close();
+            });
+        }
+
+        async function testProgress() {
+            clearOutput('progress');
+            addOutput('progress', '开始测试进度流...');
+            
+            try {
+                const response = await fetch('/streaming/progress');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value, { stream: true });
+                    const lines = text.trim().split('\n');
+                    
+                    lines.forEach(line => {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const json = JSON.parse(line.substring(6));
+                                addOutput('progress', `进度: ${json.progress}% - ${json.message}`);
+                            } catch (e) {
+                                addOutput('progress', line);
+                            }
+                        }
+                    });
+                }
+                
+                addOutput('progress', '✅ 进度流测试完成');
+            } catch (error) {
+                addOutput('progress', '❌ 错误: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
