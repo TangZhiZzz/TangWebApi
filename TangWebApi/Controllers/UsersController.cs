@@ -36,16 +36,16 @@ namespace TangWebApi.Controllers
         /// <response code="200">成功返回用户列表</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<User>), 200)]
-        public async Task<List<User>> GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
             try
             {
                 var users = await _db.Queryable<User>().ToListAsync();
-                return users;
+                return Ok(users);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"获取用户列表失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -59,24 +59,20 @@ namespace TangWebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(User), 200)]
         [ProducesResponseType(404)]
-        public async Task<User> GetUser(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
             try
             {
                 var user = await _db.Queryable<User>().Where(u => u.Id == id).FirstAsync();
                 if (user == null)
                 {
-                    throw new KeyNotFoundException($"用户不存在: {id}");
+                    return NotFound(new { Error = $"用户不存在: {id}" });
                 }
-                return user;
-            }
-            catch (KeyNotFoundException)
-            {
-                throw;
+                return Ok(user);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"获取用户信息失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -90,13 +86,13 @@ namespace TangWebApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(User), 201)]
         [ProducesResponseType(400)]
-        public async Task<User> CreateUser([FromBody] User user)
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             try
             {
                 if (string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email))
                 {
-                    throw new ArgumentException("用户名和邮箱不能为空");
+                    return BadRequest(new { Error = "用户名和邮箱不能为空" });
                 }
 
                 // 检查用户名是否已存在
@@ -106,22 +102,18 @@ namespace TangWebApi.Controllers
                 
                 if (existingUser != null)
                 {
-                    throw new ArgumentException("用户名或邮箱已存在");
+                    return BadRequest(new { Error = "用户名或邮箱已存在" });
                 }
 
                 user.CreatedAt = DateTime.Now;
                 user.IsActive = true;
                 
                 var result = await _db.Insertable(user).ExecuteReturnEntityAsync();
-                return result;
-            }
-            catch (ArgumentException)
-            {
-                throw;
+                return CreatedAtAction(nameof(GetUser), new { id = result.Id }, result);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"创建用户失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -138,14 +130,14 @@ namespace TangWebApi.Controllers
         [ProducesResponseType(typeof(User), 200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public async Task<User> UpdateUser(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
             try
             {
                 var existingUser = await _db.Queryable<User>().Where(u => u.Id == id).FirstAsync();
                 if (existingUser == null)
                 {
-                    throw new KeyNotFoundException($"用户不存在: {id}");
+                    return NotFound(new { Error = $"用户不存在: {id}" });
                 }
 
                 user.Id = id;
@@ -155,15 +147,11 @@ namespace TangWebApi.Controllers
                 await _db.Updateable(user).ExecuteCommandAsync();
                 
                 var updatedUser = await _db.Queryable<User>().Where(u => u.Id == id).FirstAsync();
-                return updatedUser;
-            }
-            catch (KeyNotFoundException)
-            {
-                throw;
+                return Ok(updatedUser);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"更新用户失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -177,26 +165,22 @@ namespace TangWebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<DeleteUserResponse> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
                 var user = await _db.Queryable<User>().Where(u => u.Id == id).FirstAsync();
                 if (user == null)
                 {
-                    throw new KeyNotFoundException($"用户不存在: {id}");
+                    return NotFound(new { Error = $"用户不存在: {id}" });
                 }
 
                 await _db.Deleteable<User>().Where(u => u.Id == id).ExecuteCommandAsync();
-                return new DeleteUserResponse { Message = "删除用户成功", Id = id };
-            }
-            catch (KeyNotFoundException)
-            {
-                throw;
+                return Ok(new { Message = "删除用户成功", Id = id });
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"删除用户失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -208,32 +192,26 @@ namespace TangWebApi.Controllers
         /// <response code="200">成功返回搜索结果</response>
         [HttpGet("search")]
         [ProducesResponseType(typeof(List<User>), 200)]
-        public async Task<List<User>> SearchUsers([FromQuery] string keyword)
+        public async Task<IActionResult> SearchUsers([FromQuery] string keyword)
         {
             try
             {
                 if (string.IsNullOrEmpty(keyword))
                 {
-                    return await GetUsers();
+                    var allUsers = await _db.Queryable<User>().ToListAsync();
+                    return Ok(allUsers);
                 }
 
                 var users = await _db.Queryable<User>()
                     .Where(u => u.Username.Contains(keyword) || u.Email.Contains(keyword))
                     .ToListAsync();
                 
-                return users;
+                return Ok(users);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"搜索用户失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
-    }
-
-    // 用户相关响应模型
-    public class DeleteUserResponse
-    {
-        public required string Message { get; set; }
-        public int Id { get; set; }
     }
 }

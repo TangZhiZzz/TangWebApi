@@ -33,7 +33,7 @@ namespace TangWebApi.Controllers
         /// <param name="request">发送消息请求</param>
         /// <returns></returns>
         [HttpPost("send")]
-        public async Task<SendMessageResponse> SendMessage([FromBody] SendMessageRequest request)
+        public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
         {
             try
             {
@@ -49,19 +49,19 @@ namespace TangWebApi.Controllers
 
                 // 移除冗余的发送成功日志
 
-                return new SendMessageResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "消息发送成功",
                     QueueName = request.QueueName,
                     MessageId = message.MessageId,
                     Timestamp = message.CreatedAt
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "发送消息到队列 {QueueName} 失败", request.QueueName);
-                throw new InvalidOperationException($"发送消息失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -72,7 +72,7 @@ namespace TangWebApi.Controllers
         /// <param name="message">消息内容</param>
         /// <returns></returns>
         [HttpPost("send-text")]
-        public async Task<SendTextMessageResponse> SendTextMessage([Required] string queueName, [Required] string message)
+        public async Task<IActionResult> SendTextMessage([Required] string queueName, [Required] string message)
         {
             try
             {
@@ -80,19 +80,19 @@ namespace TangWebApi.Controllers
 
                 _logger.LogInformation("文本消息已发送到队列 {QueueName}: {Message}", queueName, message);
 
-                return new SendTextMessageResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "文本消息发送成功",
                     QueueName = queueName,
                     Content = message,
                     Timestamp = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "发送文本消息到队列 {QueueName} 失败", queueName);
-                throw new InvalidOperationException($"发送文本消息失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -102,7 +102,7 @@ namespace TangWebApi.Controllers
         /// <param name="request">创建队列请求</param>
         /// <returns></returns>
         [HttpPost("create-queue")]
-        public async Task<CreateQueueResponse> CreateQueue([FromBody] CreateQueueRequest request)
+        public async Task<IActionResult> CreateQueue([FromBody] CreateQueueRequest request)
         {
             try
             {
@@ -110,19 +110,19 @@ namespace TangWebApi.Controllers
 
                 _logger.LogInformation("队列 {QueueName} 创建成功", request.QueueName);
 
-                return new CreateQueueResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "队列创建成功",
                     QueueName = request.QueueName,
                     Durable = request.Durable,
                     Timestamp = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建队列 {QueueName} 失败", request.QueueName);
-                throw new InvalidOperationException($"创建队列失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -132,7 +132,7 @@ namespace TangWebApi.Controllers
         /// <param name="queueName">队列名称</param>
         /// <returns></returns>
         [HttpDelete("delete-queue/{queueName}")]
-        public async Task<DeleteQueueResponse> DeleteQueue(string queueName)
+        public async Task<IActionResult> DeleteQueue(string queueName)
         {
             try
             {
@@ -140,18 +140,18 @@ namespace TangWebApi.Controllers
 
                 // 移除冗余的删除成功日志
 
-                return new DeleteQueueResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "队列删除成功",
                     QueueName = queueName,
                     Timestamp = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "删除队列 {QueueName} 失败", queueName);
-                throw new InvalidOperationException($"删除队列失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -161,7 +161,7 @@ namespace TangWebApi.Controllers
         /// <param name="queueName">队列名称</param>
         /// <returns></returns>
         [HttpGet("queue-info/{queueName}")]
-        public async Task<QueueInfoResponse> GetQueueInfo(string queueName)
+        public async Task<IActionResult> GetQueueInfo(string queueName)
         {
             try
             {
@@ -174,17 +174,17 @@ namespace TangWebApi.Controllers
                     Durable = true // RabbitMQ默认创建持久化队列
                 };
 
-                return new QueueInfoResponse
+                return Ok(new
                 {
                     Success = true,
                     Data = queueInfo,
                     Timestamp = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取队列 {QueueName} 信息失败", queueName);
-                throw new InvalidOperationException($"获取队列信息失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -194,22 +194,22 @@ namespace TangWebApi.Controllers
         /// <param name="queueName">队列名称</param>
         /// <returns></returns>
         [HttpPost("purge/{queueName}")]
-        public async Task<PurgeQueueResponse> PurgeQueue(string queueName)
+        public async Task<IActionResult> PurgeQueue(string queueName)
         {
             try
             {
                 await _messageQueueService.PurgeQueueAsync(queueName);
-                return new PurgeQueueResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "队列已清空",
                     QueueName = queueName,
                     Timestamp = DateTime.Now
-                };
+                });
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"清空队列失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -218,7 +218,7 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("test-connection")]
-        public async Task<TestConnectionResponse> TestConnection()
+        public async Task<IActionResult> TestConnection()
         {
             var testResult = new TestResult();
             var errors = new List<string>();
@@ -251,25 +251,25 @@ namespace TangWebApi.Controllers
                 await _messageQueueService.DeleteQueueAsync(testQueueName);
                 testResult.QueueDeleted = true;
 
-                return new TestConnectionResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "消息队列连接测试成功",
                     TestResult = testResult,
                     Timestamp = DateTime.Now
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "测试消息队列连接失败");
-                return new TestConnectionResponse
+                return StatusCode(500, new
                 {
                     Success = false,
                     Message = "消息队列连接测试失败",
                     Error = ex.Message,
                     TestResult = testResult,
                     Timestamp = DateTime.Now
-                };
+                });
             }
         }
 
@@ -322,7 +322,7 @@ namespace TangWebApi.Controllers
         /// <param name="message">测试消息</param>
         /// <returns></returns>
         [HttpPost("test-multi-queues")]
-        public async Task<TestMultiQueuesResponse> TestMultiQueues(string message = "Multi-Queue Test Message")
+        public async Task<IActionResult> TestMultiQueues(string message = "Multi-Queue Test Message")
         {
             try
             {
@@ -367,7 +367,7 @@ namespace TangWebApi.Controllers
                 var successCount = results.Count(r => r.Success);
                 var totalCount = results.Count;
 
-                return new TestMultiQueuesResponse
+                return Ok(new
                 {
                     Success = successCount > 0,
                     Message = $"多队列测试完成，成功 {successCount}/{totalCount} 个队列",
@@ -376,12 +376,12 @@ namespace TangWebApi.Controllers
                     FailedQueues = totalCount - successCount,
                     Results = results,
                     Timestamp = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "多队列测试失败");
-                throw new InvalidOperationException($"多队列测试失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
@@ -390,11 +390,11 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("queue-config")]
-        public QueueConfigResponse GetQueueConfig()
+        public IActionResult GetQueueConfig()
         {
             try
             {
-                return new QueueConfigResponse
+                return Ok(new
                 {
                     Success = true,
                     Message = "获取队列配置成功",
@@ -408,76 +408,17 @@ namespace TangWebApi.Controllers
                         Enabled = q.Enabled
                     }).ToList(),
                     Timestamp = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取队列配置失败");
-                throw new InvalidOperationException($"获取队列配置失败: {ex.Message}", ex);
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
     }
 
-    // 消息队列相关响应模型
-    public class SendMessageResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public required string QueueName { get; set; }
-        public required string MessageId { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class SendTextMessageResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public required string QueueName { get; set; }
-        public required string Content { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class CreateQueueResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public required string QueueName { get; set; }
-        public bool Durable { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class DeleteQueueResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public required string QueueName { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class QueueInfoResponse
-    {
-        public bool Success { get; set; }
-        public required object Data { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class PurgeQueueResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public required string QueueName { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class TestConnectionResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public string? Error { get; set; }
-        public required TestResult TestResult { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
+    // 保留必要的数据模型
     public class TestResult
     {
         public bool ConnectionTest { get; set; }
@@ -487,17 +428,6 @@ namespace TangWebApi.Controllers
         public bool QueueDeleted { get; set; }
     }
 
-    public class TestMultiQueuesResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public int TotalQueues { get; set; }
-        public int SuccessfulQueues { get; set; }
-        public int FailedQueues { get; set; }
-        public required List<QueueTestResult> Results { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
     public class QueueTestResult
     {
         public required string QueueName { get; set; }
@@ -505,17 +435,6 @@ namespace TangWebApi.Controllers
         public bool Success { get; set; }
         public required string Message { get; set; }
         public string? SentMessage { get; set; }
-    }
-
-    public class QueueConfigResponse
-    {
-        public bool Success { get; set; }
-        public required string Message { get; set; }
-        public int TotalQueues { get; set; }
-        public int EnabledQueues { get; set; }
-        public int DisabledQueues { get; set; }
-        public required List<QueueConfigInfo> Queues { get; set; }
-        public DateTime Timestamp { get; set; }
     }
 
     public class QueueConfigInfo

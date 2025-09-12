@@ -17,17 +17,12 @@ namespace TangWebApi.Controllers
         [HttpGet("test")]
         public IActionResult TestRateLimit()
         {
-            return Ok(new ApiResponse<object>
+            return Ok(new
             {
-                Success = true,
-                Message = "限流测试成功",
-                Data = new
-                {
-                    Timestamp = DateTime.Now,
-                    ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    UserAgent = Request.Headers["User-Agent"].ToString(),
-                    RequestId = Guid.NewGuid().ToString()
-                }
+                Timestamp = DateTime.Now,
+                ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                UserAgent = Request.Headers["User-Agent"].ToString(),
+                RequestId = Guid.NewGuid().ToString()
             });
         }
 
@@ -50,18 +45,13 @@ namespace TangWebApi.Controllers
                 }
             }
 
-            return Ok(new ApiResponse<object>
+            return Ok(new
             {
-                Success = true,
-                Message = "限流状态获取成功",
-                Data = new
-                {
-                    ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    Timestamp = DateTime.Now,
-                    RateLimitHeaders = rateLimitHeaders,
-                    RequestPath = Request.Path.Value,
-                    Method = Request.Method
-                }
+                ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                Timestamp = DateTime.Now,
+                RateLimitHeaders = rateLimitHeaders,
+                RequestPath = Request.Path.Value,
+                Method = Request.Method
             });
         }
 
@@ -72,16 +62,11 @@ namespace TangWebApi.Controllers
         [HttpPost("burst")]
         public IActionResult BurstTest()
         {
-            return Ok(new ApiResponse<object>
+            return Ok(new
             {
-                Success = true,
-                Message = "高频测试接口调用成功",
-                Data = new
-                {
-                    Timestamp = DateTime.Now,
-                    RequestCount = 1,
-                    Warning = "此接口用于测试限流功能，请勿频繁调用"
-                }
+                Timestamp = DateTime.Now,
+                RequestCount = 1,
+                Warning = "此接口用于测试限流功能，请勿频繁调用"
             });
         }
 
@@ -116,12 +101,7 @@ namespace TangWebApi.Controllers
                 }
             };
 
-            return Ok(new ApiResponse<object>
-            {
-                Success = true,
-                Message = "限流配置获取成功",
-                Data = config
-            });
+            return Ok(config);
         }
     }
 }

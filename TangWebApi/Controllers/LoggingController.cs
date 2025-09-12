@@ -26,16 +26,17 @@ namespace TangWebApi.Controllers
         /// <param name="message">日志消息</param>
         /// <returns></returns>
         [HttpPost("debug")]
-        public LogResponse TestDebugLog([FromBody] string message)
+        public IActionResult TestDebugLog([FromBody] string message)
         {
-            _loggingService.LogDebug(message);
-            return new LogResponse
+            try
             {
-                Message = "调试日志已记录",
-                LogLevel = "Debug",
-                Content = message,
-                Timestamp = DateTime.Now
-            };
+                _loggingService.LogDebug(message);
+                return Ok(new { message = "调试日志已记录", logLevel = "Debug", content = message, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -44,16 +45,17 @@ namespace TangWebApi.Controllers
         /// <param name="message">日志消息</param>
         /// <returns></returns>
         [HttpGet("test-debug")]
-        public LogResponse TestDebugLogGet([FromQuery] string message = "测试调试日志")
+        public IActionResult TestDebugLogGet([FromQuery] string message = "测试调试日志")
         {
-            _loggingService.LogDebug(message);
-            return new LogResponse
+            try
             {
-                Message = "调试日志已记录",
-                LogLevel = "Debug",
-                Content = message,
-                Timestamp = DateTime.Now
-            };
+                _loggingService.LogDebug(message);
+                return Ok(new { message = "调试日志已记录", logLevel = "Debug", content = message, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -62,16 +64,17 @@ namespace TangWebApi.Controllers
         /// <param name="message">日志消息</param>
         /// <returns></returns>
         [HttpPost("info")]
-        public LogResponse TestInfoLog([FromBody] string message)
+        public IActionResult TestInfoLog([FromBody] string message)
         {
-            _loggingService.LogInformation(message);
-            return new LogResponse
+            try
             {
-                Message = "信息日志已记录",
-                LogLevel = "Information",
-                Content = message,
-                Timestamp = DateTime.Now
-            };
+                _loggingService.LogInformation(message);
+                return Ok(new { message = "信息日志已记录", logLevel = "Information", content = message, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -80,16 +83,17 @@ namespace TangWebApi.Controllers
         /// <param name="message">日志消息</param>
         /// <returns></returns>
         [HttpPost("warning")]
-        public LogResponse TestWarningLog([FromBody] string message)
+        public IActionResult TestWarningLog([FromBody] string message)
         {
-            _loggingService.LogWarning(message);
-            return new LogResponse
+            try
             {
-                Message = "警告日志已记录",
-                LogLevel = "Warning",
-                Content = message,
-                Timestamp = DateTime.Now
-            };
+                _loggingService.LogWarning(message);
+                return Ok(new { message = "警告日志已记录", logLevel = "Warning", content = message, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -98,17 +102,18 @@ namespace TangWebApi.Controllers
         /// <param name="message">日志消息</param>
         /// <returns></returns>
         [HttpPost("error")]
-        public LogResponse TestErrorLog([FromBody] string message)
+        public IActionResult TestErrorLog([FromBody] string message)
         {
-            var exception = new Exception("测试异常: " + message);
-            _loggingService.LogError(message, exception);
-            return new LogResponse
+            try
             {
-                Message = "错误日志已记录",
-                LogLevel = "Error",
-                Content = message,
-                Timestamp = DateTime.Now
-            };
+                var exception = new Exception("测试异常: " + message);
+                _loggingService.LogError(message, exception);
+                return Ok(new { message = "错误日志已记录", logLevel = "Error", content = message, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -117,17 +122,18 @@ namespace TangWebApi.Controllers
         /// <param name="message">日志消息</param>
         /// <returns></returns>
         [HttpPost("critical")]
-        public LogResponse TestCriticalLog([FromBody] string message)
+        public IActionResult TestCriticalLog([FromBody] string message)
         {
-            var exception = new Exception("测试严重异常: " + message);
-            _loggingService.LogCritical(message, exception);
-            return new LogResponse
+            try
             {
-                Message = "严重错误日志已记录",
-                LogLevel = "Critical",
-                Content = message,
-                Timestamp = DateTime.Now
-            };
+                var exception = new Exception("测试严重异常: " + message);
+                _loggingService.LogCritical(message, exception);
+                return Ok(new { message = "严重错误日志已记录", logLevel = "Critical", content = message, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -136,25 +142,27 @@ namespace TangWebApi.Controllers
         /// <param name="request">结构化日志请求</param>
         /// <returns></returns>
         [HttpPost("structured")]
-        public StructuredLogResponse TestStructuredLog([FromBody] StructuredLogRequest request)
+        public IActionResult TestStructuredLog([FromBody] StructuredLogRequest request)
         {
-            var properties = new Dictionary<string, object>
+            try
             {
-                { "UserId", request.UserId },
-                { "Action", request.Action },
-                { "Resource", request.Resource },
-                { "Timestamp", DateTime.UtcNow },
-                { "ClientIP", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown" },
-                { "UserAgent", Request.Headers["User-Agent"].ToString() }
-            };
+                var properties = new Dictionary<string, object>
+                {
+                    { "UserId", request.UserId },
+                    { "Action", request.Action },
+                    { "Resource", request.Resource },
+                    { "Timestamp", DateTime.UtcNow },
+                    { "ClientIP", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown" },
+                    { "UserAgent", Request.Headers["User-Agent"].ToString() }
+                };
 
-            _loggingService.LogStructured(request.LogLevel, request.Message, properties);
-            return new StructuredLogResponse
+                _loggingService.LogStructured(request.LogLevel, request.Message, properties);
+                return Ok(new { message = "结构化日志已记录", properties, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
             {
-                Message = "结构化日志已记录",
-                Properties = properties,
-                Timestamp = DateTime.Now
-            };
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -163,19 +171,21 @@ namespace TangWebApi.Controllers
         /// <param name="request">业务操作请求</param>
         /// <returns></returns>
         [HttpPost("business")]
-        public BusinessLogResponse TestBusinessLog([FromBody] BusinessLogRequest request)
+        public IActionResult TestBusinessLog([FromBody] BusinessLogRequest request)
         {
-            _loggingService.LogBusinessOperation(
-                request.Operation,
-                request.UserId,
-                request.Resource
-            );
-            return new BusinessLogResponse
+            try
             {
-                Message = "业务操作日志已记录",
-                Operation = request.Operation,
-                Timestamp = DateTime.Now
-            };
+                _loggingService.LogBusinessOperation(
+                    request.Operation,
+                    request.UserId,
+                    request.Resource
+                );
+                return Ok(new { message = "业务操作日志已记录", operation = request.Operation, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -184,36 +194,37 @@ namespace TangWebApi.Controllers
         /// <param name="delayMs">延迟毫秒数</param>
         /// <returns></returns>
         [HttpPost("performance/{delayMs}")]
-        public async Task<PerformanceLogResponse> TestPerformanceLog(int delayMs)
+        public async Task<IActionResult> TestPerformanceLog(int delayMs)
         {
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            
-            // 模拟耗时操作
-            await Task.Delay(delayMs);
-            
-            stopwatch.Stop();
-            
-            var properties = new Dictionary<string, object>
+            try
             {
-                { "Operation", "TestPerformance" },
-                { "Duration", stopwatch.ElapsedMilliseconds },
-                { "DelayRequested", delayMs },
-                { "Endpoint", Request.Path }
-            };
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                
+                // 模拟耗时操作
+                await Task.Delay(delayMs);
+                
+                stopwatch.Stop();
+                
+                var properties = new Dictionary<string, object>
+                {
+                    { "Operation", "TestPerformance" },
+                    { "Duration", stopwatch.ElapsedMilliseconds },
+                    { "DelayRequested", delayMs },
+                    { "Endpoint", Request.Path }
+                };
 
-            _loggingService.LogStructured(
-                stopwatch.ElapsedMilliseconds > 1000 ? LogLevel.Warning : LogLevel.Information,
-                "性能测试操作完成，耗时 {Duration}ms",
-                properties
-            );
+                _loggingService.LogStructured(
+                    stopwatch.ElapsedMilliseconds > 1000 ? LogLevel.Warning : LogLevel.Information,
+                    "性能测试操作完成，耗时 {Duration}ms",
+                    properties
+                );
 
-            return new PerformanceLogResponse
+                return Ok(new { message = "性能测试完成", duration = stopwatch.ElapsedMilliseconds, delayRequested = delayMs, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
             {
-                Message = "性能测试完成",
-                Duration = stopwatch.ElapsedMilliseconds,
-                DelayRequested = delayMs,
-                Timestamp = DateTime.Now
-            };
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -221,19 +232,17 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("config")]
-        public LoggingConfigResponse GetLoggingConfig()
+        public IActionResult GetLoggingConfig()
         {
-            _loggingService.LogInformation("日志配置信息被查询");
-            return new LoggingConfigResponse
+            try
             {
-                MinimumLevel = "Information",
-                ConsoleEnabled = true,
-                FileEnabled = true,
-                DatabaseEnabled = false,
-                LogFilePath = "logs/app.log",
-                EnabledProviders = new[] { "Console", "File", "Serilog" },
-                Timestamp = DateTime.Now
-            };
+                _loggingService.LogInformation("日志配置信息被查询");
+                return Ok(new { minimumLevel = "Information", consoleEnabled = true, fileEnabled = true, databaseEnabled = false, logFilePath = "logs/app.log", enabledProviders = new[] { "Console", "File", "Serilog" }, timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
     }
 
@@ -260,45 +269,5 @@ namespace TangWebApi.Controllers
         public Dictionary<string, object>? Details { get; set; }
     }
 
-    // 日志相关响应模型
-    public class LogResponse
-    {
-        public required string Message { get; set; }
-        public required string LogLevel { get; set; }
-        public required string Content { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
 
-    public class StructuredLogResponse
-    {
-        public required string Message { get; set; }
-        public required Dictionary<string, object> Properties { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class BusinessLogResponse
-    {
-        public required string Message { get; set; }
-        public required string Operation { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class PerformanceLogResponse
-    {
-        public required string Message { get; set; }
-        public long Duration { get; set; }
-        public int DelayRequested { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
-
-    public class LoggingConfigResponse
-    {
-        public required string MinimumLevel { get; set; }
-        public bool ConsoleEnabled { get; set; }
-        public bool FileEnabled { get; set; }
-        public bool DatabaseEnabled { get; set; }
-        public required string LogFilePath { get; set; }
-        public required string[] EnabledProviders { get; set; }
-        public DateTime Timestamp { get; set; }
-    }
 }
