@@ -13,25 +13,23 @@ namespace TangWebApi.Controllers
         /// <summary>
         /// 测试限流接口
         /// </summary>
-        /// <returns>测试响应</returns>
         [HttpGet("test")]
-        public IActionResult TestRateLimit()
+        public async Task<object> TestRateLimit()
         {
-            return Ok(new
+            return new
             {
                 Timestamp = DateTime.Now,
                 ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
                 UserAgent = Request.Headers["User-Agent"].ToString(),
                 RequestId = Guid.NewGuid().ToString()
-            });
+            };
         }
 
         /// <summary>
         /// 获取限流状态
         /// </summary>
-        /// <returns>限流状态信息</returns>
         [HttpGet("status")]
-        public IActionResult GetRateLimitStatus()
+        public async Task<object> GetRateLimitStatus()
         {
             var headers = Response.Headers;
             var rateLimitHeaders = new Dictionary<string, string>();
@@ -45,37 +43,35 @@ namespace TangWebApi.Controllers
                 }
             }
 
-            return Ok(new
+            return new
             {
                 ClientIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
                 Timestamp = DateTime.Now,
                 RateLimitHeaders = rateLimitHeaders,
                 RequestPath = Request.Path.Value,
                 Method = Request.Method
-            });
+            };
         }
 
         /// <summary>
         /// 高频测试接口（用于快速触发限流）
         /// </summary>
-        /// <returns>测试响应</returns>
         [HttpPost("burst")]
-        public IActionResult BurstTest()
+        public async Task<object> BurstTest()
         {
-            return Ok(new
+            return new
             {
                 Timestamp = DateTime.Now,
                 RequestCount = 1,
                 Warning = "此接口用于测试限流功能，请勿频繁调用"
-            });
+            };
         }
 
         /// <summary>
         /// 获取限流配置信息
         /// </summary>
-        /// <returns>限流配置</returns>
         [HttpGet("config")]
-        public IActionResult GetRateLimitConfig()
+        public async Task<object> GetRateLimitConfig()
         {
             var config = new
             {
@@ -101,7 +97,7 @@ namespace TangWebApi.Controllers
                 }
             };
 
-            return Ok(config);
+            return config;
         }
     }
 }
