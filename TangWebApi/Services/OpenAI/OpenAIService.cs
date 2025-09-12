@@ -31,7 +31,6 @@ namespace TangWebApi.Services
                     Endpoint = new Uri(_settings.BaseUrl)
                 }
             );
-            _openAIClient.GetAssistantClient
 
         }
     }

@@ -18,7 +18,6 @@ builder.Services.AddJwtAuthenticationService(builder.Configuration);
 builder.Services.AddCacheService(builder.Configuration);
 builder.Services.AddSerilogService(builder.Configuration);
 builder.Services.AddMessageQueueService(builder.Configuration);
-builder.Services.AddHealthCheckService(builder.Configuration);
 builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddOpenAIService(builder.Configuration);

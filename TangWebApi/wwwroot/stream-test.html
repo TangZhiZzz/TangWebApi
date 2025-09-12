@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式输出测试页面</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .stop-btn {
+            background: #dc3545;
+        }
+        .stop-btn:hover {
+            background: #c82333;
+        }
+        .output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .message.info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+        }
+        .message.success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .message.error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status.connected {
+            color: #28a745;
+        }
+        .status.disconnected {
+            color: #dc3545;
+        }
+        .clear-btn {
+            background: #6c757d;
+            float: right;
+        }
+        .clear-btn:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 流式输出API测试页面</h1>
+    
+    <!-- SSE 流式传输测试 -->
+    <div class="container">
+        <h2>📡 Server-Sent Events (SSE) 流式传输</h2>
+        <div class="button-group">
+            <button id="startSSE">开始SSE流式传输</button>
+            <button id="stopSSE" class="stop-btn" disabled>停止SSE传输</button>
+            <button class="clear-btn" onclick="clearOutput('sseOutput')">清空输出</button>
+        </div>
+        <div class="status" id="sseStatus">状态: 未连接</div>
+        <div class="output" id="sseOutput">等待开始SSE流式传输...</div>
+    </div>
+
+    <!-- JSON 流式传输测试 -->
+    <div class="container">
+        <h2>📄 JSON 流式传输</h2>
+        <div class="button-group">
+            <button id="startJSON">开始JSON流式传输</button>
+            <button id="stopJSON" class="stop-btn" disabled>停止JSON传输</button>
+            <button class="clear-btn" onclick="clearOutput('jsonOutput')">清空输出</button>
+        </div>
+        <div class="status" id="jsonStatus">状态: 未开始</div>
+        <div class="output" id="jsonOutput">等待开始JSON流式传输...</div>
+    </div>
+
+    <!-- 普通流式传输测试 -->
+    <div class="container">
+        <h2>📝 普通文本流式传输</h2>
+        <div class="button-group">
+            <button id="startText">开始文本流式传输</button>
+            <button id="stopText" class="stop-btn" disabled>停止文本传输</button>
+            <button class="clear-btn" onclick="clearOutput('textOutput')">清空输出</button>
+        </div>
+        <div class="status" id="textStatus">状态: 未开始</div>
+        <div class="output" id="textOutput">等待开始文本流式传输...</div>
+    </div>
+
+    <script>
+        // 全局变量
+        let sseEventSource = null;
+        let jsonAbortController = null;
+        let textAbortController = null;
+
+        // SSE 流式传输
+        document.getElementById('startSSE').addEventListener('click', function() {
+            if (sseEventSource) {
+                sseEventSource.close();
+            }
+
+            const output = document.getElementById('sseOutput');
+            const status = document.getElementById('sseStatus');
+            const startBtn = document.getElementById('startSSE');
+            const stopBtn = document.getElementById('stopSSE');
+
+            output.innerHTML = '';
+            status.textContent = '状态: 连接中...';
+            status.className = 'status';
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            sseEventSource = new EventSource('/api/demo/sse-stream');
+
+            sseEventSource.onopen = function() {
+                status.textContent = '状态: 已连接';
+                status.className = 'status connected';
+                addMessage(output, 'SSE连接已建立', 'success');
+            };
+
+            sseEventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    addMessage(output, `[${data.timestamp}] ${data.message}`, 'info');
+                } catch (e) {
+                    addMessage(output, `收到数据: ${event.data}`, 'info');
+                }
+            };
+
+            sseEventSource.addEventListener('end', function(event) {
+                const data = JSON.parse(event.data);
+                addMessage(output, `传输完成: ${data.message}`, 'success');
+                sseEventSource.close();
+                resetSSEButtons();
+            });
+
+            sseEventSource.onerror = function(event) {
+                addMessage(output, '连接错误或已断开', 'error');
+                status.textContent = '状态: 连接错误';
+                status.className = 'status disconnected';
+                resetSSEButtons();
+            };
+        });
+
+        document.getElementById('stopSSE').addEventListener('click', function() {
+            if (sseEventSource) {
+                sseEventSource.close();
+                addMessage(document.getElementById('sseOutput'), '用户手动停止连接', 'error');
+                resetSSEButtons();
+            }
+        });
+
+        function resetSSEButtons() {
+            document.getElementById('startSSE').disabled = false;
+            document.getElementById('stopSSE').disabled = true;
+            document.getElementById('sseStatus').textContent = '状态: 已断开';
+            document.getElementById('sseStatus').className = 'status disconnected';
+        }
+
+        // JSON 流式传输
+        document.getElementById('startJSON').addEventListener('click', async function() {
+            const output = document.getElementById('jsonOutput');
+            const status = document.getElementById('jsonStatus');
+            const startBtn = document.getElementById('startJSON');
+            const stopBtn = document.getElementById('stopJSON');
+
+            output.innerHTML = '';
+            status.textContent = '状态: 请求中...';
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            jsonAbortController = new AbortController();
+
+            try {
+                const response = await fetch('/api/demo/json-stream', {
+                    signal: jsonAbortController.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                status.textContent = '状态: 接收数据中...';
+                status.className = 'status connected';
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) {
+                        addMessage(output, 'JSON流式传输完成', 'success');
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+                    
+                    // 尝试解析完整的JSON
+                    try {
+                        const data = JSON.parse(buffer);
+                        addMessage(output, `接收到完整JSON数据: ${JSON.stringify(data, null, 2)}`, 'info');
+                        buffer = '';
+                    } catch (e) {
+                        // JSON还不完整，继续接收
+                        addMessage(output, `接收数据块: ${buffer}`, 'info');
+                    }
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    addMessage(output, '用户取消了请求', 'error');
+                } else {
+                    addMessage(output, `请求错误: ${error.message}`, 'error');
+                }
+            } finally {
+                resetJSONButtons();
+            }
+        });
+
+        document.getElementById('stopJSON').addEventListener('click', function() {
+            if (jsonAbortController) {
+                jsonAbortController.abort();
+            }
+        });
+
+        function resetJSONButtons() {
+            document.getElementById('startJSON').disabled = false;
+            document.getElementById('stopJSON').disabled = true;
+            document.getElementById('jsonStatus').textContent = '状态: 已停止';
+            document.getElementById('jsonStatus').className = 'status disconnected';
+        }
+
+        // 普通文本流式传输
+        document.getElementById('startText').addEventListener('click', async function() {
+            const output = document.getElementById('textOutput');
+            const status = document.getElementById('textStatus');
+            const startBtn = document.getElementById('startText');
+            const stopBtn = document.getElementById('stopText');
+
+            output.innerHTML = '';
+            status.textContent = '状态: 请求中...';
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            textAbortController = new AbortController();
+
+            try {
+                const response = await fetch('/api/demo/test-stream', {
+                    signal: textAbortController.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                status.textContent = '状态: 接收数据中...';
+                status.className = 'status connected';
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) {
+                        addMessage(output, '文本流式传输完成', 'success');
+                        break;
+                    }
+
+                    const text = decoder.decode(value, { stream: true });
+                    addMessage(output, `接收: ${text.trim()}`, 'info');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    addMessage(output, '用户取消了请求', 'error');
+                } else {
+                    addMessage(output, `请求错误: ${error.message}`, 'error');
+                }
+            } finally {
+                resetTextButtons();
+            }
+        });
+
+        document.getElementById('stopText').addEventListener('click', function() {
+            if (textAbortController) {
+                textAbortController.abort();
+            }
+        });
+
+        function resetTextButtons() {
+            document.getElementById('startText').disabled = false;
+            document.getElementById('stopText').disabled = true;
+            document.getElementById('textStatus').textContent = '状态: 已停止';
+            document.getElementById('textStatus').className = 'status disconnected';
+        }
+
+        // 工具函数
+        function addMessage(container, message, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearOutput(outputId) {
+            document.getElementById(outputId).innerHTML = '输出已清空...';
+        }
+
+        // 页面加载完成提示
+        window.addEventListener('load', function() {
+            console.log('流式输出测试页面已加载完成');
+        });
+    </script>
+</body>
+</html>
