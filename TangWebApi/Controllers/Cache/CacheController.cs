@@ -27,13 +27,12 @@ namespace TangWebApi.Controllers
         /// <param name="expireMinutes">过期时间（分钟）</param>
         /// <returns></returns>
         [HttpPost("set")]
-        public async Task<CacheSetResponse> SetCache([FromQuery] string key, [FromQuery] string value, [FromQuery] int? expireMinutes = null)
+        public async Task SetCache([FromQuery] string key, [FromQuery] string value, [FromQuery] int? expireMinutes = null)
         {
             try
             {
                 TimeSpan? expiration = expireMinutes.HasValue ? TimeSpan.FromMinutes(expireMinutes.Value) : null;
                 await _cacheService.SetAsync(key, value, expiration);
-                return new CacheSetResponse { Message = "缓存设置成功", Key = key, Value = value, ExpireMinutes = expireMinutes };
             }
             catch (Exception ex)
             {
@@ -48,7 +47,7 @@ namespace TangWebApi.Controllers
         /// <param name="key">缓存键</param>
         /// <returns></returns>
         [HttpGet("get")]
-        public async Task<CacheGetResponse> GetCache([FromQuery] string key)
+        public async Task<string> GetCache([FromQuery] string key)
         {
             try
             {
@@ -57,7 +56,7 @@ namespace TangWebApi.Controllers
                 {
                     throw new KeyNotFoundException($"缓存不存在: {key}");
                 }
-                return new CacheGetResponse { Message = "获取缓存成功", Key = key, Value = value };
+                return value;
             }
             catch (KeyNotFoundException)
             {
@@ -76,12 +75,11 @@ namespace TangWebApi.Controllers
         /// <param name="key">缓存键</param>
         /// <returns></returns>
         [HttpDelete("remove")]
-        public async Task<CacheRemoveResponse> RemoveCache([FromQuery] string key)
+        public async Task RemoveCache([FromQuery] string key)
         {
             try
             {
                 await _cacheService.RemoveAsync(key);
-                return new CacheRemoveResponse { Message = "删除缓存成功", Key = key };
             }
             catch (Exception ex)
             {
@@ -96,12 +94,12 @@ namespace TangWebApi.Controllers
         /// <param name="key">缓存键</param>
         /// <returns></returns>
         [HttpGet("exists")]
-        public async Task<CacheExistsResponse> ExistsCache([FromQuery] string key)
+        public async Task<bool> ExistsCache([FromQuery] string key)
         {
             try
             {
                 var exists = await _cacheService.ExistsAsync(key);
-                return new CacheExistsResponse { Message = "检查缓存完成", Key = key, Exists = exists };
+                return exists;
             }
             catch (Exception ex)
             {
@@ -115,12 +113,11 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("clear")]
-        public async Task<CacheClearResponse> ClearCache()
+        public async Task ClearCache()
         {
             try
             {
                 await _cacheService.ClearAsync();
-                return new CacheClearResponse { Message = "清空缓存成功" };
             }
             catch (Exception ex)
             {
@@ -134,50 +131,11 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("type")]
-        public CacheTypeResponse GetCacheType()
+        public string GetCacheType()
         {
             var cacheType = _cacheService.GetType().Name;
-            return new CacheTypeResponse { Message = "获取缓存类型成功", CacheType = cacheType };
+            return cacheType;
         }
     }
-
-    // 缓存相关响应模型
-    public class CacheSetResponse
-    {
-        public required string Message { get; set; }
-        public required string Key { get; set; }
-        public required string Value { get; set; }
-        public int? ExpireMinutes { get; set; }
-    }
-
-    public class CacheGetResponse
-    {
-        public required string Message { get; set; }
-        public required string Key { get; set; }
-        public required string Value { get; set; }
-    }
-
-    public class CacheRemoveResponse
-    {
-        public required string Message { get; set; }
-        public required string Key { get; set; }
-    }
-
-    public class CacheExistsResponse
-    {
-        public required string Message { get; set; }
-        public required string Key { get; set; }
-        public bool Exists { get; set; }
-    }
-
-    public class CacheClearResponse
-    {
-        public required string Message { get; set; }
-    }
-
-    public class CacheTypeResponse
-    {
-        public required string Message { get; set; }
-        public required string CacheType { get; set; }
-    }
+   
 }

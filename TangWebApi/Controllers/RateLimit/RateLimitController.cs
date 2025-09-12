@@ -1,4 +1,6 @@
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using TangWebApi.Models;
 
 namespace TangWebApi.Controllers
@@ -10,6 +12,13 @@ namespace TangWebApi.Controllers
     [Route("api/[controller]")]
     public class RateLimitController : ControllerBase
     {
+        private readonly ClientRateLimitOptions _clientRateLimitOptions;
+
+        public RateLimitController(IOptions<ClientRateLimitOptions> clientRateLimitOptions)
+        {
+
+            _clientRateLimitOptions = clientRateLimitOptions.Value;
+        }
         /// <summary>
         /// 测试限流接口
         /// </summary>
@@ -71,33 +80,9 @@ namespace TangWebApi.Controllers
         /// 获取限流配置信息
         /// </summary>
         [HttpGet("config")]
-        public async Task<object> GetRateLimitConfig()
+        public object GetRateLimitConfig()
         {
-            var config = new
-            {
-                IpRateLimit = new
-                {
-                    GeneralRules = new[]
-                    {
-                        new { Endpoint = "*", Period = "1m", Limit = 100 },
-                        new { Endpoint = "*", Period = "1h", Limit = 1000 }
-                    },
-                    HttpStatusCode = 429,
-                    Message = "IP限流：每分钟最多100次请求，每小时最多1000次请求"
-                },
-                ClientRateLimit = new
-                {
-                    GeneralRules = new[]
-                    {
-                        new { Endpoint = "*", Period = "1m", Limit = 200 },
-                        new { Endpoint = "*", Period = "1h", Limit = 2000 }
-                    },
-                    HttpStatusCode = 429,
-                    Message = "客户端限流：每分钟最多200次请求，每小时最多2000次请求"
-                }
-            };
-
-            return config;
+            return _clientRateLimitOptions;
         }
     }
 }

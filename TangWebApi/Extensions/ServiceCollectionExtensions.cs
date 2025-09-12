@@ -347,37 +347,7 @@ namespace TangWebApi.Extensions
             return services;
         }
 
-        /// <summary>
-        /// 添加健康检查服务
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <param name="configuration">配置</param>
-        /// <returns></returns>
-        public static IServiceCollection AddHealthCheckService(this IServiceCollection services, IConfiguration configuration)
-        {
-            // 注册健康检查服务，使用工厂模式处理可选依赖
-            services.AddScoped<IHealthCheckService>(provider =>
-            {
-                var sqlSugarClient = provider.GetRequiredService<ISqlSugarClient>();
-                var messageQueueService = provider.GetRequiredService<IMessageQueueService>();
-                var logger = provider.GetRequiredService<ILogger<HealthCheckService>>();
-                
-                // 尝试获取Redis连接，如果失败则传入null
-                IConnectionMultiplexer? redis = null;
-                try
-                {
-                    redis = provider.GetService<IConnectionMultiplexer>();
-                }
-                catch
-                {
-                    // Redis连接不可用时忽略错误
-                }
-                
-                return new HealthCheckService(sqlSugarClient, redis, messageQueueService, logger);
-            });
-
-            return services;
-        }
+        
 
         /// <summary>
         /// 添加邮件服务
