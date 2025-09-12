@@ -16,7 +16,7 @@ namespace TangWebApi.Services
     {
         private readonly OpenAISettings _settings;
         private readonly ILogger<OpenAIService> _logger;
-        private readonly ChatClient _chatClient;
+        private readonly OpenAIClient _openAIClient;
 
         public OpenAIService(IOptions<OpenAISettings> settings, ILogger<OpenAIService> logger)
         {
@@ -24,14 +24,14 @@ namespace TangWebApi.Services
             _logger = logger;
 
             // 初始化ChatClient
-            _chatClient = new(
-                model: _settings.DefaultModel,
+            _openAIClient = new(
                 credential: new ApiKeyCredential(_settings.ApiKey),
                 options: new OpenAIClientOptions()
                 {
                     Endpoint = new Uri(_settings.BaseUrl)
                 }
             );
+            _openAIClient.GetAssistantClient
 
         }
     }
