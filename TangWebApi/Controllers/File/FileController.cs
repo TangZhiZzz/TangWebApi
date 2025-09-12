@@ -161,7 +161,7 @@ namespace TangWebApi.Controllers
         /// </summary>
         /// <param name="request">查询条件</param>
         [HttpPost("query")]
-        public async Task<List<TangWebApi.Entity.FileInfo>> QueryFiles([FromBody] FileQueryRequest request)
+        public async Task<(List<Entity.FileInfo> files, int totalCount)> QueryFiles([FromBody] FileQueryRequest request)
         {
             return await _fileService.GetFilesAsync(request);
         }

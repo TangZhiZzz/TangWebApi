@@ -49,4 +49,16 @@ public class User
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// 最后登录事件
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public DateTime? LastLoginAt { get; internal set; }
+
+    /// <summary>
+    /// 登录次数
+    /// </summary>
+    [SugarColumn]
+    public int LoginCount { get; internal set; }
 }

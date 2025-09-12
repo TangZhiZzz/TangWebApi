@@ -486,5 +486,22 @@ namespace TangWebApi.Extensions
 
             return services;
         }
+
+        /// <summary>
+        /// 添加OpenAI服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddOpenAIService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 配置OpenAI设置
+            services.Configure<TangWebApi.Options.OpenAISettings>(configuration.GetSection("OpenAISettings"));
+
+            // 注册OpenAI服务
+            services.AddScoped<IOpenAIService, OpenAIService>();
+
+            return services;
+        }
     }
 }

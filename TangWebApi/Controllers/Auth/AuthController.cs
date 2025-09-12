@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// 用户登录
     /// </summary>
-    /// <param name="request">登录请求</param>
+    /// <param name="input">登录请求</param>
     /// <returns>登录结果</returns>
     [HttpPost("login")]
     public async Task<LoginOutput> Login([FromBody] LoginInput input)
