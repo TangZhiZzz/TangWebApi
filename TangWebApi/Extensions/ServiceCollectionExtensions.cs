@@ -474,5 +474,22 @@ namespace TangWebApi.Extensions
 
             return services;
         }
+
+        /// <summary>
+        /// 添加分布式锁服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddDistributedLockService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 配置分布式锁设置
+            services.Configure<TangWebApi.Options.DistributedLockSettings>(configuration.GetSection("DistributedLockSettings"));
+
+            // 注册分布式锁服务（单例模式）
+            services.AddSingleton<IDistributedLockService, RedisDistributedLockService>();
+
+            return services;
+        }
     }
 }

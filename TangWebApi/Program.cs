@@ -21,6 +21,7 @@ builder.Services.AddMessageQueueService(builder.Configuration);
 builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddOpenAIService(builder.Configuration);
+builder.Services.AddDistributedLockService(builder.Configuration);
 builder.Services.AddSystemInfoService();
 builder.Services.AddRateLimitingService(builder.Configuration);
 builder.Services.AddSignalRService(builder.Configuration);
