@@ -8,7 +8,7 @@ using TangWebApi.Filter;
 using TangWebApi.Models;
 using TangWebApi.Services;
 
-namespace TangWebApi.Controllers.Demo
+namespace TangWebApi.Controllers
 {
     /// <summary>
     /// OpenAI客户端测试控制器
