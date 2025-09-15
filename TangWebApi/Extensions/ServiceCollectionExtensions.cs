@@ -468,8 +468,9 @@ namespace TangWebApi.Extensions
             // 配置OpenAI设置
             services.Configure<TangWebApi.Options.OpenAISettings>(configuration.GetSection("OpenAISettings"));
 
-            // 注册OpenAI服务
-            services.AddScoped<IOpenAIService, OpenAIService>();
+            // 注册OpenAI客户端服务（单例模式）
+            services.AddSingleton<IOpenAIClientService, OpenAIClientService>();
+
 
             return services;
         }

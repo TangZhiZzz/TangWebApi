@@ -232,7 +232,9 @@ namespace TangWebApi.Middleware
                 pathValue.StartsWith("/api/streaming/") ||
                 pathValue.Contains("/stream") ||
                 pathValue.Contains("/sse") ||
-                pathValue.Contains("/events"));
+                pathValue.Contains("/events")||
+                pathValue.Contains("/openaiclient")
+                );
         }
 
         /// <summary>

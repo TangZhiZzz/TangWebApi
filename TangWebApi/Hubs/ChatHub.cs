@@ -11,7 +11,7 @@ public class ChatHub : Hub
 {
     // 存储连接用户信息
     private static readonly ConcurrentDictionary<string, ConnectedUser> _connectedUsers = new();
-    
+
     // 存储群组信息
     private static readonly ConcurrentDictionary<string, GroupInfo> _groups = new();
 
@@ -23,16 +23,16 @@ public class ChatHub : Hub
     {
         var connectionId = Context.ConnectionId;
         var username = Context.User?.Identity?.Name ?? $"User_{connectionId[..8]}";
-        
+
         var user = new ConnectedUser
         {
             ConnectionId = connectionId,
             Username = username,
             ConnectedAt = DateTime.UtcNow
         };
-        
+
         _connectedUsers.TryAdd(connectionId, user);
-        
+
         // 通知所有客户端有新用户加入
         var joinMessage = new SignalRMessage
         {
@@ -40,11 +40,11 @@ public class ChatHub : Hub
             Content = $"{username} 加入了聊天室",
             Type = MessageType.UserJoined
         };
-        
+
         await Clients.All.SendAsync("ReceiveMessage", joinMessage);
         await Clients.All.SendAsync("UserJoined", user);
         await UpdateOnlineUserCount();
-        
+
         await base.OnConnectedAsync();
     }
 
@@ -56,7 +56,7 @@ public class ChatHub : Hub
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var connectionId = Context.ConnectionId;
-        
+
         if (_connectedUsers.TryRemove(connectionId, out var user))
         {
             // 从所有群组中移除用户
@@ -70,7 +70,7 @@ public class ChatHub : Hub
                     await Clients.Group(groupName).SendAsync("UserLeftGroup", user.Username, groupName);
                 }
             }
-            
+
             // 通知所有客户端用户离开
             var leaveMessage = new SignalRMessage
             {
@@ -78,12 +78,12 @@ public class ChatHub : Hub
                 Content = $"{user.Username} 离开了聊天室",
                 Type = MessageType.UserLeft
             };
-            
+
             await Clients.All.SendAsync("ReceiveMessage", leaveMessage);
             await Clients.All.SendAsync("UserLeft", user.Username);
             await UpdateOnlineUserCount();
         }
-        
+
         await base.OnDisconnectedAsync(exception);
     }
 
@@ -98,7 +98,7 @@ public class ChatHub : Hub
         {
             message.Username = user.Username;
             message.Timestamp = DateTime.UtcNow;
-            
+
             await Clients.All.SendAsync("ReceiveMessage", message);
         }
     }
@@ -124,7 +124,7 @@ public class ChatHub : Hub
                     TargetUser = targetUsername,
                     Timestamp = DateTime.UtcNow
                 };
-                
+
                 // 发送给目标用户和发送者
                 await Clients.Client(targetUser.ConnectionId).SendAsync("ReceivePrivateMessage", message);
                 await Clients.Caller.SendAsync("ReceivePrivateMessage", message);
@@ -146,7 +146,7 @@ public class ChatHub : Hub
         if (_connectedUsers.TryGetValue(Context.ConnectionId, out var user))
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            
+
             if (!_groups.ContainsKey(groupName))
             {
                 _groups.TryAdd(groupName, new GroupInfo
@@ -156,7 +156,7 @@ public class ChatHub : Hub
                     CreatedAt = DateTime.UtcNow
                 });
             }
-            
+
             if (_groups.TryGetValue(groupName, out var group))
             {
                 if (!group.Members.Contains(user.Username))
@@ -164,13 +164,13 @@ public class ChatHub : Hub
                     group.Members.Add(user.Username);
                     group.MemberCount = group.Members.Count;
                 }
-                
+
                 if (!user.Groups.Contains(groupName))
                 {
                     user.Groups.Add(groupName);
                 }
             }
-            
+
             await Clients.Group(groupName).SendAsync("UserJoinedGroup", user.Username, groupName);
             await Clients.Caller.SendAsync("JoinedGroup", groupName);
         }
@@ -186,15 +186,15 @@ public class ChatHub : Hub
         if (_connectedUsers.TryGetValue(Context.ConnectionId, out var user))
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-            
+
             if (_groups.TryGetValue(groupName, out var group))
             {
                 group.Members.Remove(user.Username);
                 group.MemberCount = group.Members.Count;
             }
-            
+
             user.Groups.Remove(groupName);
-            
+
             await Clients.Group(groupName).SendAsync("UserLeftGroup", user.Username, groupName);
             await Clients.Caller.SendAsync("LeftGroup", groupName);
         }
@@ -218,7 +218,7 @@ public class ChatHub : Hub
                 GroupName = groupName,
                 Timestamp = DateTime.UtcNow
             };
-            
+
             await Clients.Group(groupName).SendAsync("ReceiveGroupMessage", message);
         }
     }
@@ -236,7 +236,7 @@ public class ChatHub : Hub
             ActiveGroups = _groups.Count,
             Timestamp = DateTime.UtcNow
         };
-        
+
         await Clients.Caller.SendAsync("OnlineUserStats", stats);
     }
 
@@ -260,7 +260,7 @@ public class ChatHub : Hub
         if (_connectedUsers.TryGetValue(Context.ConnectionId, out var user))
         {
             notification.Timestamp = DateTime.UtcNow;
-            
+
             if (!string.IsNullOrEmpty(notification.TargetUser))
             {
                 // 发送给特定用户

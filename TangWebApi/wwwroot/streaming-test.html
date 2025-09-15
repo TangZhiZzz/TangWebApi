@@ -12,6 +12,7 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
+
         .container {
             background: white;
             padding: 20px;
@@ -19,6 +20,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+
         button {
             background: #007bff;
             color: white;
@@ -29,13 +31,16 @@
             margin-right: 10px;
             margin-bottom: 10px;
         }
-        button:hover {
-            background: #0056b3;
-        }
-        button:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-        }
+
+            button:hover {
+                background: #0056b3;
+            }
+
+            button:disabled {
+                background: #6c757d;
+                cursor: not-allowed;
+            }
+
         .output {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -48,12 +53,15 @@
             font-size: 14px;
             white-space: pre-wrap;
         }
+
         .error {
             color: #dc3545;
         }
+
         .success {
             color: #28a745;
         }
+
         h2 {
             color: #333;
             border-bottom: 2px solid #007bff;
@@ -63,7 +71,7 @@
 </head>
 <body>
     <h1>ASP.NET Core 流式输出测试</h1>
-    
+
     <div class="container">
         <h2>1. 简单测试流</h2>
         <button onclick="testSimple()">测试简单流</button>
@@ -99,9 +107,25 @@
         <div id="progress-output" class="output"></div>
     </div>
 
+    <div class="container">
+        <h2>6. openai</h2>
+        <button onclick="testOpenAI()">测试OpenAI</button>
+        <button onclick="clearOutput('OpenAI')">清空</button>
+        <div id="OpenAI-output" class="output"></div>
+    </div>
+
     <script>
-        function addOutput(type, message) {
+
+        function appendOutput(type, message) {
             const output = document.getElementById(type + '-output');
+            output.textContent += message;
+            output.scrollTop = output.scrollHeight;
+        }
+        function addOutput(type, message, isLine = false) {
+            const output = document.getElementById(type + '-output');
+            if (isLine) {
+                output.textContent += '\n\n';
+            }
             output.textContent += message + '\n';
             output.scrollTop = output.scrollHeight;
         }
@@ -113,20 +137,20 @@
         async function testSimple() {
             clearOutput('simple');
             addOutput('simple', '开始测试简单流...');
-            
+
             try {
                 const response = await fetch('/streaming/test');
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                
+
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
+
                     const text = decoder.decode(value, { stream: true });
                     addOutput('simple', text.trim());
                 }
-                
+
                 addOutput('simple', '✅ 简单流测试完成');
             } catch (error) {
                 addOutput('simple', '❌ 错误: ' + error.message);
@@ -136,20 +160,20 @@
         async function testTextStream() {
             clearOutput('text');
             addOutput('text', '开始测试文本流...');
-            
+
             try {
                 const response = await fetch('/streaming/text');
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                
+
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
+
                     const text = decoder.decode(value, { stream: true });
                     addOutput('text', text.trim());
                 }
-                
+
                 addOutput('text', '✅ 文本流测试完成');
             } catch (error) {
                 addOutput('text', '❌ 错误: ' + error.message);
@@ -159,19 +183,19 @@
         async function testJsonStream() {
             clearOutput('json');
             addOutput('json', '开始测试JSON流...');
-            
+
             try {
                 const response = await fetch('/streaming/json');
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                
+
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
+
                     const text = decoder.decode(value, { stream: true });
                     const lines = text.trim().split('\n');
-                    
+
                     lines.forEach(line => {
                         if (line.trim()) {
                             try {
@@ -183,7 +207,7 @@
                         }
                     });
                 }
-                
+
                 addOutput('json', '✅ JSON流测试完成');
             } catch (error) {
                 addOutput('json', '❌ 错误: ' + error.message);
@@ -193,10 +217,10 @@
         function testSSE() {
             clearOutput('sse');
             addOutput('sse', '开始测试服务器发送事件...');
-            
+
             const eventSource = new EventSource('/streaming/sse');
-            
-            eventSource.onmessage = function(event) {
+
+            eventSource.onmessage = function (event) {
                 try {
                     const data = JSON.parse(event.data);
                     addOutput('sse', `消息 ${data.id}: ${data.message} (${data.timestamp})`);
@@ -204,13 +228,13 @@
                     addOutput('sse', event.data);
                 }
             };
-            
-            eventSource.onerror = function(error) {
+
+            eventSource.onerror = function (error) {
                 addOutput('sse', '❌ SSE连接错误');
                 eventSource.close();
             };
-            
-            eventSource.addEventListener('complete', function(event) {
+
+            eventSource.addEventListener('complete', function (event) {
                 addOutput('sse', '✅ SSE测试完成');
                 eventSource.close();
             });
@@ -219,19 +243,19 @@
         async function testProgress() {
             clearOutput('progress');
             addOutput('progress', '开始测试进度流...');
-            
+
             try {
                 const response = await fetch('/streaming/progress');
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
-                
+
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
+
                     const text = decoder.decode(value, { stream: true });
                     const lines = text.trim().split('\n');
-                    
+
                     lines.forEach(line => {
                         if (line.startsWith('data: ')) {
                             try {
@@ -243,10 +267,47 @@
                         }
                     });
                 }
-                
+
                 addOutput('progress', '✅ 进度流测试完成');
             } catch (error) {
                 addOutput('progress', '❌ 错误: ' + error.message);
+            }
+        }
+
+
+        async function testOpenAI() {
+            clearOutput('OpenAI');
+            addOutput('OpenAI', '开始测试OpenAI...');
+
+            try {
+                const response = await fetch('/OpenAIClient/completeStreamAsync', { method: 'POST' });
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value, { stream: true });
+                    const lines = text.trim().split('\n');
+
+                    lines.forEach(line => {
+                        if (line.trim()) {
+                            try {
+                                const json = JSON.parse(line);
+                                console.log(json)
+                                appendOutput('OpenAI', `${json.ContentUpdate[0].Text}`);
+                            } catch (e) {
+                                console.log(e)
+                                addOutput('OpenAI', line);
+                            }
+                        }
+                    });
+                }
+
+                addOutput('OpenAI', '✅ OpenAI测试完成', true);
+            } catch (error) {
+                addOutput('OpenAI', '❌ 错误: ' + error.message);
             }
         }
     </script>
