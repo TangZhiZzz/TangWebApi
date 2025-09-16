@@ -235,13 +235,13 @@ namespace TangWebApi.Services
 
         public async Task<T> ExecuteWithLockAsync<T>(string lockKey, Func<CancellationToken, Task<T>> action, TimeSpan expirationTime, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
-            using var distributedLock = await AcquireLockAsync(lockKey, expirationTime, timeout, cancellationToken);
+            await using var distributedLock = await AcquireLockAsync(lockKey, expirationTime, timeout, cancellationToken);
             return await action(cancellationToken);
         }
 
         public async Task ExecuteWithLockAsync(string lockKey, Func<CancellationToken, Task> action, TimeSpan expirationTime, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
-            using var distributedLock = await AcquireLockAsync(lockKey, expirationTime, timeout, cancellationToken);
+            await using var distributedLock = await AcquireLockAsync(lockKey, expirationTime, timeout, cancellationToken);
             await action(cancellationToken);
         }
 
