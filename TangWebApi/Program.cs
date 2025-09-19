@@ -21,7 +21,6 @@ builder.Services.AddMessageQueueService(builder.Configuration);
 builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddOpenAIService(builder.Configuration);
-builder.Services.AddDistributedLockService(builder.Configuration);
 builder.Services.AddRateLimitingService(builder.Configuration);
 
 // 配置消息队列设置
