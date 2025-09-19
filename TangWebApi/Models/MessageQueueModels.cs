@@ -76,9 +76,9 @@ namespace TangWebApi.Models
     }
 
     /// <summary>
-    /// 发送消息请求
+    /// 队列消息请求
     /// </summary>
-    public class SendMessageRequest
+    public class QueueMessageRequest
     {
         /// <summary>
         /// 队列名称

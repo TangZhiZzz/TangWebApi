@@ -35,7 +35,7 @@ namespace TangWebApi.Controllers
         /// <param name="request">发送消息请求</param>
         /// <returns></returns>
         [HttpPost("send")]
-        public async Task SendMessage([FromBody] SendMessageRequest request)
+        public async Task SendMessage([FromBody] QueueMessageRequest request)
         {
             var message = new QueueMessage
             {

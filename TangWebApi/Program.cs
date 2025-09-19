@@ -22,6 +22,7 @@ builder.Services.AddEmailService(builder.Configuration);
 builder.Services.AddFileService(builder.Configuration);
 builder.Services.AddOpenAIService(builder.Configuration);
 builder.Services.AddRateLimitingService(builder.Configuration);
+builder.Services.AddSignalRService(builder.Configuration);
 
 // 配置消息队列设置
 builder.Services.Configure<TangWebApi.Options.MessageQueueConfig>(builder.Configuration.GetSection("MessageQueue"));

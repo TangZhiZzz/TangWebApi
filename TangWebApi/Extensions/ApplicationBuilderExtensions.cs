@@ -52,7 +52,8 @@ namespace TangWebApi.Extensions
         /// <returns></returns>
         public static IApplicationBuilder UseCorsService(this IApplicationBuilder app)
         {
-            app.UseCors("AllowAll");
+            // 为SignalR Hub使用特殊的CORS策略
+            app.UseCors("SignalRPolicy");
             return app;
         }
 
@@ -117,7 +118,13 @@ namespace TangWebApi.Extensions
         /// <returns></returns>
         public static IApplicationBuilder UseSignalRService(this IApplicationBuilder app)
         {
-            // SignalR Hub映射需要在Program.cs中使用app.MapHub进行配置
+            // 映射SignalR Hub
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<TangWebApi.Hubs.ChatHub>("/chathub");
+            });
+            
             return app;
         }
     }

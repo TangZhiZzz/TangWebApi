@@ -14,6 +14,8 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using AspNetCoreRateLimit;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace TangWebApi.Extensions
 {
@@ -145,6 +147,15 @@ namespace TangWebApi.Extensions
                     builder.AllowAnyOrigin()
                            .AllowAnyMethod()
                            .AllowAnyHeader();
+                });
+
+                // 为SignalR添加特殊的CORS策略
+                options.AddPolicy("SignalRPolicy", builder =>
+                {
+                    builder.WithOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:8080")
+                           .AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials(); // SignalR需要允许凭据
                 });
             });
 
@@ -445,6 +456,39 @@ namespace TangWebApi.Extensions
             // 注册OpenAI客户端服务（单例模式）
             services.AddSingleton<IOpenAIClientService, OpenAIClientService>();
 
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加SignalR服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="configuration">配置</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddSignalRService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // 添加SignalR服务
+            services.AddSignalR(options =>
+            {
+                // 配置SignalR选项
+                options.EnableDetailedErrors = true; // 开发环境启用详细错误信息
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15); // 保持连接间隔
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(30); // 客户端超时时间
+                options.HandshakeTimeout = TimeSpan.FromSeconds(15); // 握手超时时间
+                options.MaximumReceiveMessageSize = 32 * 1024; // 最大接收消息大小 32KB
+                options.StreamBufferCapacity = 10; // 流缓冲区容量
+            })
+            .AddJsonProtocol(options =>
+            {
+                // 配置JSON序列化选项
+                options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.WriteIndented = false;
+                options.PayloadSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
+
+            // 注册连接管理服务
+            services.AddSingleton<IConnectionManager, ConnectionManager>();
 
             return services;
         }
